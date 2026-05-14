@@ -1,16 +1,26 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.query_task import QueryTaskStatusResponse
 from app.common.response import build_success_response
-from app.services.query_task_service import get_query_task_status_response
+from app.db.deps import get_db
+from app.services.query_task_service import (
+    get_query_task_status_from_db,
+    get_query_task_status_response,
+)
 
 router = APIRouter(tags=["QueryTasks"])
 
 
 @router.get("/query-tasks/{query_task_id}", response_model=QueryTaskStatusResponse)
-def get_query_task_status(query_task_id: str) -> dict:
+def get_query_task_status(
+    query_task_id: str,
+    db: Annotated[Session, Depends(get_db)],
+) -> dict:
     status_map = {
         "qt_pending": "pending",
         "qt_running": "running",
@@ -19,8 +29,12 @@ def get_query_task_status(query_task_id: str) -> dict:
         "qt_failed": "failed",
     }
 
-    scenario = status_map.get(query_task_id, "running")
-    payload = get_query_task_status_response(scenario)
+    payload = get_query_task_status_from_db(db, query_task_id)
+    if payload is None:
+        scenario = status_map.get(query_task_id)
+        if scenario is None:
+            raise HTTPException(status_code=404, detail="query task not found")
+        payload = get_query_task_status_response(scenario)
 
     data = {
         **payload["data"],

@@ -68,6 +68,8 @@
 - OpenAPI Outline
 - OpenAPI Example Responses
 - 正式 `openapi/openapi.yaml` 首版草稿
+- TopicTemplate 已支持数据库优先读取（空库 / 异常时回落静态数据）
+- QueryTask / ResultSnapshot 已开始接入数据库优先链路（当前保留静态回退）
 
 ## 3.5 项目交付推进
 
@@ -93,6 +95,9 @@
 - `apps/worker` Dramatiq + Redis 基础骨架已落地
 - Worker 最小 QueryTask pipeline 占位链路已落地
 - API -> Worker 最小投递链路已落地（Redis 不可用时可降级）
+- Worker -> 数据库最小状态写回链路已开始落地
+- Ubuntu 海外测试机最小闭环验证已通过
+  - 验证记录：`doc/test_server_validation_record_2026-05-14.md`
 
 ---
 
@@ -173,6 +178,10 @@
 - 工程文件初始化
 - Sprint 01 实施
 
+### 当前补充结论
+
+当前仓库已从“本地可运行”推进到“测试机可运行”阶段。
+
 ---
 
 ## 6. 当前未完成但应该优先执行的内容
@@ -214,6 +223,7 @@
   - `scripts/run-worker.sh`
   - `scripts/run-web.sh`
   - `scripts/smoke-test.sh`
+  - `scripts/seed_topic_templates.py`
   - `scripts/server-bootstrap-ubuntu.sh`
   - `scripts/server-deploy.sh`
   - `scripts/server-stop.sh`

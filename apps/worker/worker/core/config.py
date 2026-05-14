@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     worker_env: str = "development"
     worker_log_level: str = "INFO"
     redis_url: str = "redis://127.0.0.1:6379/0"
+    database_url: str = "postgresql+psycopg://postgres:postgres@127.0.0.1:5432/demand_atlas"
 
     model_config = SettingsConfigDict(
         env_file=".env",

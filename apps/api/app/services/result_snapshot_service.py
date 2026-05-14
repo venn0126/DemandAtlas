@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from uuid import UUID
 from typing import Any
+
+from sqlalchemy.orm import Session
+
+from app.repositories.result_snapshot_repository import get_result_snapshot_by_id
 
 
 RESULT_SNAPSHOT_SUMMARY_MAP: dict[str, dict[str, Any]] = {
@@ -78,3 +83,40 @@ RESULT_SNAPSHOT_SUMMARY_MAP: dict[str, dict[str, Any]] = {
 
 def get_result_snapshot_summary(result_snapshot_id: str) -> dict[str, Any] | None:
     return RESULT_SNAPSHOT_SUMMARY_MAP.get(result_snapshot_id)
+
+
+def get_result_snapshot_summary_from_db(
+    db: Session,
+    result_snapshot_id: str,
+) -> dict[str, Any] | None:
+    try:
+        snapshot_uuid = UUID(result_snapshot_id)
+    except ValueError:
+        return None
+
+    snapshot = get_result_snapshot_by_id(db, snapshot_uuid)
+    if snapshot is None:
+        return None
+
+    query_input = snapshot.query_input_snapshot or {}
+    return {
+        "data": {
+            "result_snapshot_id": str(snapshot.id),
+            "query_task_id": str(snapshot.query_task_id),
+            "query_type": query_input.get("query_type", "one_click"),
+            "view_type": query_input.get("view_type", "active"),
+            "time_window": {
+                "start_at": snapshot.query_input_snapshot.get("time_window", {}).get("start_at")
+                or snapshot.generated_at.isoformat(),
+                "end_at": snapshot.query_input_snapshot.get("time_window", {}).get("end_at")
+                or snapshot.generated_at.isoformat(),
+            },
+            "generated_at": snapshot.generated_at.isoformat(),
+            "coverage_note": snapshot.coverage_note,
+            "sync_freshness_note": snapshot.sync_freshness_note,
+            "summary_stats": snapshot.summary_stats,
+            "available_boards": ["hot", "growth", "opportunity"],
+        },
+        "meta": {},
+        "error": None,
+    }
