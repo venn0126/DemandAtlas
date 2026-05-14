@@ -68,6 +68,12 @@ uv run alembic upgrade head
 ./scripts/run-api.sh
 ```
 
+如需重启 API：
+
+```bash
+./scripts/restart-api.sh
+```
+
 6. 启动前端
 
 ```bash
@@ -196,6 +202,12 @@ uv run alembic upgrade head
 
 ```bash
 ./scripts/run-api.sh
+```
+
+To restart the API cleanly:
+
+```bash
+./scripts/restart-api.sh
 ```
 
 6. Start the web app

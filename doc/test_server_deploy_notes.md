@@ -171,6 +171,12 @@ cd /srv/demand-atlas
 
 - `8000`
 
+如需无痛重启 API，建议直接使用：
+
+```bash
+./scripts/restart-api.sh
+```
+
 ### Step 7：启动 Worker
 
 ```bash
