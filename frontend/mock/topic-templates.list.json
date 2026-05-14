@@ -1,0 +1,26 @@
+{
+  "request_id": "req_tpl_list_001",
+  "data": {
+    "items": [
+      {
+        "template_id": "tpl_ai_tools",
+        "template_version_id": "tplv_ai_tools_003",
+        "name": "AI Tools",
+        "description": "AI productivity, automation, and creator tooling",
+        "default_language": "en",
+        "default_view_type": "active"
+      },
+      {
+        "template_id": "tpl_consumer_audio",
+        "template_version_id": "tplv_consumer_audio_002",
+        "name": "Consumer Audio",
+        "description": "Headphones, earbuds, audio accessories, and listening scenarios",
+        "default_language": "en",
+        "default_view_type": "active"
+      }
+    ]
+  },
+  "meta": {},
+  "error": null
+}
+

@@ -1,0 +1,23 @@
+{
+  "request_id": "req_qt_status_failed_001",
+  "data": {
+    "query_task_id": "qt_01JVA1M1WEX6NQ0QJQYY23H5Q8",
+    "status": "failed",
+    "current_stage": "fetch",
+    "progress": {
+      "current_step": 3,
+      "total_steps": 8,
+      "percent": 25
+    },
+    "result_snapshot_id": null,
+    "coverage_note": null,
+    "warnings": []
+  },
+  "meta": {},
+  "error": {
+    "code": "NO_FETCHABLE_SOURCE",
+    "message": "unable to fetch any valid source data",
+    "details": {}
+  }
+}
+

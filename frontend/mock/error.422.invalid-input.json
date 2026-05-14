@@ -1,0 +1,12 @@
+{
+  "request_id": "req_error_422_001",
+  "data": null,
+  "meta": {},
+  "error": {
+    "code": "INVALID_INPUT",
+    "message": "time_window.start_at must be earlier than time_window.end_at",
+    "details": {
+      "field": "time_window"
+    }
+  }
+}

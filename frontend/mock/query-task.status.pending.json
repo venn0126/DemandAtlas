@@ -1,0 +1,19 @@
+{
+  "request_id": "req_qt_status_pending_001",
+  "data": {
+    "query_task_id": "qt_01JVA1M1WEX6NQ0QJQYY23H5Q8",
+    "status": "pending",
+    "current_stage": null,
+    "progress": {
+      "current_step": 0,
+      "total_steps": 8,
+      "percent": 0
+    },
+    "result_snapshot_id": null,
+    "coverage_note": null,
+    "warnings": []
+  },
+  "meta": {},
+  "error": null
+}
+

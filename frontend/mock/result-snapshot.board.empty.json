@@ -1,0 +1,12 @@
+{
+  "request_id": "req_board_empty_001",
+  "data": {
+    "board_type": "hot",
+    "items": []
+  },
+  "meta": {
+    "next_page_token": null
+  },
+  "error": null
+}
+

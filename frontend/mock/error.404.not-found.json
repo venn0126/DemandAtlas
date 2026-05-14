@@ -1,0 +1,11 @@
+{
+  "request_id": "req_error_404_001",
+  "data": null,
+  "meta": {},
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "resource not found",
+    "details": {}
+  }
+}
+

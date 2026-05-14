@@ -1,0 +1,48 @@
+{
+  "product": "Demand Atlas｜需见",
+  "version": "1.0.0-mock",
+  "scenarios": {
+    "topic_templates": [
+      "topic-templates.list.json",
+      "topic-template.detail.json"
+    ],
+    "query_task_create": [
+      "query-task.create.cache-hit.json",
+      "query-task.create.async.json",
+      "query-task.create.too-broad.json"
+    ],
+    "query_task_status": [
+      "query-task.status.pending.json",
+      "query-task.status.running.json",
+      "query-task.status.partial-success.json",
+      "query-task.status.success.json",
+      "query-task.status.failed.json"
+    ],
+    "result_snapshot": [
+      "result-snapshot.summary.normal.json",
+      "result-snapshot.summary.empty.json",
+      "result-snapshot.summary.partial.json",
+      "result-snapshot.board.hot.json",
+      "result-snapshot.board.growth.json",
+      "result-snapshot.board.opportunity.json",
+      "result-snapshot.board.empty.json"
+    ],
+    "cluster_detail": [
+      "cluster-detail.normal.json",
+      "cluster-detail.partial-evidence.json"
+    ],
+    "export_jobs": [
+      "export-job.create.accepted.json",
+      "export-job.status.running.json",
+      "export-job.status.success.json",
+      "export-job.status.failed.json"
+    ],
+    "errors": [
+      "error.401.auth-required.json",
+      "error.403.access-denied.json",
+      "error.404.not-found.json",
+      "error.422.invalid-input.json"
+    ]
+  }
+}
+

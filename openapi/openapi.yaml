@@ -1,0 +1,1149 @@
+openapi: 3.1.0
+info:
+  title: Demand Atlas API
+  version: 1.0.0
+  description: |
+    OpenAPI draft for Demand Atlas (需见).
+
+    This API supports:
+    - topic template discovery
+    - query task creation and polling
+    - result snapshot retrieval
+    - board and cluster detail retrieval
+    - export job creation and polling
+
+servers:
+  - url: https://api.example.com
+    description: production
+  - url: https://staging-api.example.com
+    description: staging
+
+tags:
+  - name: TopicTemplates
+  - name: QueryTasks
+  - name: ResultSnapshots
+  - name: DemandClusters
+  - name: ExportJobs
+
+paths:
+  /api/v1/topic-templates:
+    get:
+      tags: [TopicTemplates]
+      summary: List active topic templates
+      operationId: listTopicTemplates
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            default: active
+        - name: language
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Topic templates list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicTemplateListResponse"
+              examples:
+                success:
+                  value:
+                    request_id: req_tpl_list_001
+                    data:
+                      items:
+                        - template_id: tpl_ai_tools
+                          template_version_id: tplv_ai_tools_003
+                          name: AI Tools
+                          description: AI productivity, automation, and creator tooling
+                          default_language: en
+                          default_view_type: active
+                        - template_id: tpl_consumer_audio
+                          template_version_id: tplv_consumer_audio_002
+                          name: Consumer Audio
+                          description: Headphones, earbuds, audio accessories, and listening scenarios
+                          default_language: en
+                          default_view_type: active
+                    meta: {}
+                    error: null
+        "500":
+          description: System error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/topic-templates/{template_id}:
+    get:
+      tags: [TopicTemplates]
+      summary: Get topic template detail
+      operationId: getTopicTemplate
+      parameters:
+        - name: template_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Topic template detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicTemplateDetailResponse"
+        "404":
+          description: Template not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/query-tasks:
+    post:
+      tags: [QueryTasks]
+      summary: Create a query task
+      operationId: createQueryTask
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/OneClickQueryTaskCreateRequest"
+                - $ref: "#/components/schemas/DirectedQueryTaskCreateRequest"
+      responses:
+        "200":
+          description: Cache hit result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryTaskCreateCacheHitResponse"
+              examples:
+                cacheHit:
+                  value:
+                    request_id: req_qt_create_cache_hit_001
+                    data:
+                      execution_mode: cache_hit
+                      query_task_id: qt_01JVA1HBM4YF2T2M6Q5M5M2F0A
+                      status: success
+                      result_snapshot_id: rs_01JVA1JD7YQCKRZVMD0W2X5P4M
+                      cached: true
+                    meta: {}
+                    error: null
+        "202":
+          description: Async query task accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryTaskCreateAcceptedResponse"
+              examples:
+                asyncAccepted:
+                  value:
+                    request_id: req_qt_create_async_001
+                    data:
+                      execution_mode: async
+                      query_task_id: qt_01JVA1M1WEX6NQ0QJQYY23H5Q8
+                      status: pending
+                      poll_url: /api/v1/query-tasks/qt_01JVA1M1WEX6NQ0QJQYY23H5Q8
+                      anonymous_query_access_token: anon_tok_demo
+                    meta:
+                      retry_after_ms: 1500
+                    error: null
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Query cannot be executed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/query-tasks/{query_task_id}:
+    get:
+      tags: [QueryTasks]
+      summary: Get query task status
+      operationId: getQueryTaskStatus
+      security:
+        - bearerAuth: []
+        - anonymousQueryToken: []
+      parameters:
+        - name: query_task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Query task status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryTaskStatusResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Query task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/result-snapshots/{result_snapshot_id}:
+    get:
+      tags: [ResultSnapshots]
+      summary: Get result snapshot summary
+      operationId: getResultSnapshot
+      security:
+        - bearerAuth: []
+        - anonymousQueryToken: []
+      parameters:
+        - name: result_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Result snapshot summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultSnapshotSummaryResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Result snapshot not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/result-snapshots/{result_snapshot_id}/boards/{board_type}:
+    get:
+      tags: [ResultSnapshots]
+      summary: Get board entries
+      operationId: getResultSnapshotBoard
+      security:
+        - bearerAuth: []
+        - anonymousQueryToken: []
+      parameters:
+        - name: result_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: board_type
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BoardType"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/PageToken"
+      responses:
+        "200":
+          description: Board entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoardListResponse"
+        "404":
+          description: Result snapshot or board not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/result-snapshots/{result_snapshot_id}/clusters/{cluster_id}:
+    get:
+      tags: [DemandClusters]
+      summary: Get demand cluster detail in a result snapshot
+      operationId: getClusterDetail
+      security:
+        - bearerAuth: []
+        - anonymousQueryToken: []
+      parameters:
+        - name: result_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: cluster_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evidence_page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: evidence_page_token
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cluster detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterDetailResponse"
+        "404":
+          description: Cluster not found in result snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/export-jobs:
+    post:
+      tags: [ExportJobs]
+      summary: Create an export job
+      operationId: createExportJob
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportJobCreateRequest"
+      responses:
+        "202":
+          description: Export job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportJobCreateResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Result snapshot not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Unsupported export type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/export-jobs/{export_job_id}:
+    get:
+      tags: [ExportJobs]
+      summary: Get export job status
+      operationId: getExportJob
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: export_job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Export job status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportJobStatusResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Export job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    anonymousQueryToken:
+      type: apiKey
+      in: header
+      name: X-Query-Access-Token
+
+  parameters:
+    PageSize:
+      name: page_size
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    PageToken:
+      name: page_token
+      in: query
+      required: false
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+
+  schemas:
+    ApiMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        next_page_token:
+          type:
+            - string
+            - "null"
+        retry_after_ms:
+          type:
+            - integer
+            - "null"
+
+    ApiError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    QueryType:
+      type: string
+      enum: [one_click, directed]
+
+    ViewType:
+      type: string
+      enum: [active, new]
+
+    BoardType:
+      type: string
+      enum: [hot, growth, opportunity]
+
+    QueryTaskStatus:
+      type: string
+      enum: [pending, running, partial_success, success, failed]
+
+    ExportJobStatus:
+      type: string
+      enum: [pending, running, success, failed]
+
+    ContentAvailabilityStatus:
+      type: string
+      enum: [public, removed, deleted, private, banned, inaccessible, nsfw_excluded]
+
+    TopicTemplateSummary:
+      type: object
+      additionalProperties: false
+      required: [template_id, template_version_id, name, default_language, default_view_type]
+      properties:
+        template_id:
+          type: string
+        template_version_id:
+          type: string
+        name:
+          type: string
+        description:
+          type:
+            - string
+            - "null"
+        default_language:
+          type: string
+        default_view_type:
+          $ref: "#/components/schemas/ViewType"
+
+    TopicTemplateDetail:
+      allOf:
+        - $ref: "#/components/schemas/TopicTemplateSummary"
+        - type: object
+          additionalProperties: false
+          properties:
+            candidate_subreddit_count:
+              type: integer
+
+    TimeWindow:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [preset]
+          properties:
+            preset:
+              type: string
+              enum: [7d, 30d, 90d]
+        - type: object
+          additionalProperties: false
+          required: [start_at, end_at]
+          properties:
+            start_at:
+              type: string
+              format: date-time
+            end_at:
+              type: string
+              format: date-time
+
+    ResolvedTimeWindow:
+      type: object
+      additionalProperties: false
+      required: [start_at, end_at]
+      properties:
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+
+    MinEngagementThreshold:
+      type: object
+      additionalProperties: false
+      properties:
+        min_post_score:
+          type:
+            - integer
+            - "null"
+        min_comment_count:
+          type:
+            - integer
+            - "null"
+
+    OneClickQueryTaskCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [query_type, template_id, time_window]
+      properties:
+        query_type:
+          type: string
+          enum: [one_click]
+        template_id:
+          type: string
+        template_version_id:
+          type:
+            - string
+            - "null"
+        view_type:
+          $ref: "#/components/schemas/ViewType"
+        time_window:
+          $ref: "#/components/schemas/TimeWindow"
+        force_refresh:
+          type: boolean
+          default: false
+
+    DirectedQueryTaskCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [query_type, keywords, time_window]
+      properties:
+        query_type:
+          type: string
+          enum: [directed]
+        keywords:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: string
+        subreddits:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+        language:
+          type: string
+          default: en
+        region_hints:
+          type: array
+          items:
+            type: string
+        min_engagement_threshold:
+          $ref: "#/components/schemas/MinEngagementThreshold"
+        view_type:
+          $ref: "#/components/schemas/ViewType"
+        time_window:
+          $ref: "#/components/schemas/TimeWindow"
+        force_refresh:
+          type: boolean
+          default: false
+
+    QueryProgress:
+      type: object
+      additionalProperties: false
+      properties:
+        current_step:
+          type: integer
+        total_steps:
+          type: integer
+        percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    WarningItem:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    SummaryStats:
+      type: object
+      additionalProperties: false
+      properties:
+        cluster_count:
+          type: integer
+        post_count:
+          type: integer
+        comment_count:
+          type: integer
+
+    EvidenceSnippet:
+      type: object
+      additionalProperties: false
+      required: [evidence_id, excerpt, subreddit, created_at, availability_status]
+      properties:
+        evidence_id:
+          type: string
+        excerpt:
+          type: string
+        subreddit:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        availability_status:
+          $ref: "#/components/schemas/ContentAvailabilityStatus"
+        source_url:
+          type:
+            - string
+            - "null"
+
+    ClusterFlags:
+      type: object
+      additionalProperties: false
+      properties:
+        is_weak_signal:
+          type: boolean
+        is_low_confidence:
+          type: boolean
+        is_emerging_signal:
+          type: boolean
+
+    ClusterScores:
+      type: object
+      additionalProperties: false
+      properties:
+        discussion_score:
+          type:
+            - number
+            - "null"
+        attention_score:
+          type:
+            - number
+            - "null"
+        growth_score:
+          type:
+            - number
+            - "null"
+        opportunity_score:
+          type:
+            - number
+            - "null"
+        confidence_score:
+          type: number
+
+    ClusterMetrics:
+      type: object
+      additionalProperties: false
+      properties:
+        post_count:
+          type: integer
+        comment_count:
+          type: integer
+        unique_user_count:
+          type: integer
+        community_spread_count:
+          type: integer
+
+    BoardEntry:
+      type: object
+      additionalProperties: false
+      required: [rank, cluster_id, title, board_score, confidence_score]
+      properties:
+        rank:
+          type: integer
+        cluster_id:
+          type: string
+        title:
+          type: string
+        summary:
+          type:
+            - string
+            - "null"
+        board_score:
+          type: number
+        discussion_score:
+          type:
+            - number
+            - "null"
+        attention_score:
+          type:
+            - number
+            - "null"
+        growth_score:
+          type:
+            - number
+            - "null"
+        opportunity_score:
+          type:
+            - number
+            - "null"
+        confidence_score:
+          type: number
+        post_count:
+          type: integer
+        comment_count:
+          type: integer
+        unique_user_count:
+          type: integer
+        is_weak_signal:
+          type: boolean
+        is_low_confidence:
+          type: boolean
+        is_emerging_signal:
+          type: boolean
+        top_subreddits:
+          type: array
+          items:
+            type: string
+        highlight_evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceSnippet"
+
+    DemandClusterDetail:
+      type: object
+      additionalProperties: false
+      required: [cluster_id, title, summary, time_window, flags, scores, metrics]
+      properties:
+        cluster_id:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        time_window:
+          $ref: "#/components/schemas/ResolvedTimeWindow"
+        flags:
+          $ref: "#/components/schemas/ClusterFlags"
+        scores:
+          $ref: "#/components/schemas/ClusterScores"
+        metrics:
+          $ref: "#/components/schemas/ClusterMetrics"
+        scenes:
+          type: array
+          items:
+            type: string
+        pain_points:
+          type: array
+          items:
+            type: string
+        alternatives:
+          type: array
+          items:
+            type: string
+        supporting_evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceSnippet"
+        opposing_evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceSnippet"
+        top_subreddits:
+          type: array
+          items:
+            type: string
+        coverage_note:
+          type:
+            - string
+            - "null"
+
+    ExportJobCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [result_snapshot_id, export_type]
+      properties:
+        result_snapshot_id:
+          type: string
+        export_type:
+          type: string
+          enum: [markdown, csv]
+
+    ExportJobSummary:
+      type: object
+      additionalProperties: false
+      required: [export_job_id, status]
+      properties:
+        export_job_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/ExportJobStatus"
+        download_url:
+          type:
+            - string
+            - "null"
+        expires_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+
+    TopicTemplateListResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: false
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/TopicTemplateSummary"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    TopicTemplateDetailResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          $ref: "#/components/schemas/TopicTemplateDetail"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    QueryTaskCreateCacheHitResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: false
+          required: [execution_mode, query_task_id, status, result_snapshot_id, cached]
+          properties:
+            execution_mode:
+              type: string
+              enum: [cache_hit]
+            query_task_id:
+              type: string
+            status:
+              $ref: "#/components/schemas/QueryTaskStatus"
+            result_snapshot_id:
+              type: string
+            cached:
+              type: boolean
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    QueryTaskCreateAcceptedResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: false
+          required: [execution_mode, query_task_id, status, poll_url]
+          properties:
+            execution_mode:
+              type: string
+              enum: [async]
+            query_task_id:
+              type: string
+            status:
+              $ref: "#/components/schemas/QueryTaskStatus"
+            poll_url:
+              type: string
+            anonymous_query_access_token:
+              type:
+                - string
+                - "null"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    QueryTaskStatusResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: false
+          required: [query_task_id, status]
+          properties:
+            query_task_id:
+              type: string
+            status:
+              $ref: "#/components/schemas/QueryTaskStatus"
+            current_stage:
+              type:
+                - string
+                - "null"
+            progress:
+              $ref: "#/components/schemas/QueryProgress"
+            result_snapshot_id:
+              type:
+                - string
+                - "null"
+            coverage_note:
+              type:
+                - string
+                - "null"
+            warnings:
+              type: array
+              items:
+                $ref: "#/components/schemas/WarningItem"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/ApiError"
+
+    ResultSnapshotSummaryResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          $ref: "#/components/schemas/ResultSnapshotSummary"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    ResultSnapshotSummary:
+      type: object
+      additionalProperties: false
+      required: [result_snapshot_id, query_task_id, view_type, generated_at]
+      properties:
+        result_snapshot_id:
+          type: string
+        query_task_id:
+          type: string
+        query_type:
+          $ref: "#/components/schemas/QueryType"
+        view_type:
+          $ref: "#/components/schemas/ViewType"
+        time_window:
+          $ref: "#/components/schemas/ResolvedTimeWindow"
+        generated_at:
+          type: string
+          format: date-time
+        coverage_note:
+          type:
+            - string
+            - "null"
+        sync_freshness_note:
+          type:
+            - string
+            - "null"
+        summary_stats:
+          $ref: "#/components/schemas/SummaryStats"
+        available_boards:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoardType"
+
+    BoardListResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: false
+          required: [board_type, items]
+          properties:
+            board_type:
+              $ref: "#/components/schemas/BoardType"
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/BoardEntry"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    ClusterDetailResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          $ref: "#/components/schemas/DemandClusterDetail"
+        meta:
+          type: object
+          additionalProperties: false
+          properties:
+            evidence_next_page_token:
+              type:
+                - string
+                - "null"
+        error:
+          type: "null"
+
+    ExportJobCreateResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: object
+          additionalProperties: false
+          required: [export_job_id, status, poll_url]
+          properties:
+            export_job_id:
+              type: string
+            status:
+              $ref: "#/components/schemas/ExportJobStatus"
+            poll_url:
+              type: string
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          type: "null"
+
+    ExportJobStatusResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data]
+      properties:
+        request_id:
+          type: string
+        data:
+          $ref: "#/components/schemas/ExportJobSummary"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/ApiError"
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [request_id, data, meta, error]
+      properties:
+        request_id:
+          type: string
+        data:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/ApiMeta"
+        error:
+          $ref: "#/components/schemas/ApiError"

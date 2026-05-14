@@ -1,0 +1,12 @@
+{
+  "request_id": "req_export_status_success_001",
+  "data": {
+    "export_job_id": "exp_01JVA3F5BPB6QYH2FAM0X6G8S0",
+    "status": "success",
+    "download_url": "https://storage.example.com/exports/2026-05-12/exp_01JVA3F5BPB6QYH2FAM0X6G8S0.md",
+    "expires_at": "2026-05-13T09:50:00Z"
+  },
+  "meta": {},
+  "error": null
+}
+

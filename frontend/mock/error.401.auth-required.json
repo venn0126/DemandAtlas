@@ -1,0 +1,11 @@
+{
+  "request_id": "req_error_401_001",
+  "data": null,
+  "meta": {},
+  "error": {
+    "code": "AUTH_REQUIRED",
+    "message": "authentication required",
+    "details": {}
+  }
+}
+

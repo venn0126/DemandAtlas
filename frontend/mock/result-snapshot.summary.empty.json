@@ -1,0 +1,25 @@
+{
+  "request_id": "req_rs_summary_empty_001",
+  "data": {
+    "result_snapshot_id": "rs_01JVA2120R3D39SY1CMN18R8QW",
+    "query_task_id": "qt_01JVA20F4A1B31ANJVVKQJ0ZJ4",
+    "query_type": "directed",
+    "view_type": "active",
+    "time_window": {
+      "start_at": "2026-04-01T00:00:00Z",
+      "end_at": "2026-05-01T00:00:00Z"
+    },
+    "generated_at": "2026-05-12T09:28:00Z",
+    "coverage_note": "no valid clusters were formed from available sources",
+    "sync_freshness_note": "latest source sync at 2026-05-12T09:20:00Z",
+    "summary_stats": {
+      "cluster_count": 0,
+      "post_count": 8,
+      "comment_count": 17
+    },
+    "available_boards": ["hot"]
+  },
+  "meta": {},
+  "error": null
+}
+

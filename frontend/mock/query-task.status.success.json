@@ -1,0 +1,19 @@
+{
+  "request_id": "req_qt_status_success_001",
+  "data": {
+    "query_task_id": "qt_01JVA1M1WEX6NQ0QJQYY23H5Q8",
+    "status": "success",
+    "current_stage": "snapshot",
+    "progress": {
+      "current_step": 8,
+      "total_steps": 8,
+      "percent": 100
+    },
+    "result_snapshot_id": "rs_01JVA1T4WM4B3PG5N8W1HEP7QA",
+    "coverage_note": "full coverage on candidate sources",
+    "warnings": []
+  },
+  "meta": {},
+  "error": null
+}
+

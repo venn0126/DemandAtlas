@@ -1,0 +1,72 @@
+{
+  "request_id": "req_cluster_detail_001",
+  "data": {
+    "cluster_id": "clu_01JVA2G0X9W4N9V6W2JQ1H4A4C",
+    "title": "Users still prefer wired earbuds for reliability",
+    "summary": "In the last 30 days, users repeatedly discussed stability, lower latency, and no charging overhead.",
+    "time_window": {
+      "start_at": "2026-04-01T00:00:00Z",
+      "end_at": "2026-05-01T00:00:00Z"
+    },
+    "flags": {
+      "is_weak_signal": false,
+      "is_low_confidence": false,
+      "is_emerging_signal": false
+    },
+    "scores": {
+      "discussion_score": 82.0,
+      "attention_score": 79.5,
+      "growth_score": 41.0,
+      "opportunity_score": 73.0,
+      "confidence_score": 88.0
+    },
+    "metrics": {
+      "post_count": 12,
+      "comment_count": 143,
+      "unique_user_count": 56,
+      "community_spread_count": 4
+    },
+    "scenes": ["commuting", "gaming", "video editing"],
+    "pain_points": [
+      "bluetooth instability",
+      "charging burden",
+      "higher latency"
+    ],
+    "alternatives": ["wireless earbuds", "budget bluetooth headsets"],
+    "supporting_evidence": [
+      {
+        "evidence_id": "ev_01JVA2M3N2X6JYV0T2SR2Y8GF7",
+        "excerpt": "Wired just works.",
+        "subreddit": "Earbuds",
+        "created_at": "2026-04-22T09:00:00Z",
+        "availability_status": "public",
+        "source_url": "https://reddit.com/r/Earbuds/comments/demo1"
+      },
+      {
+        "evidence_id": "ev_01JVA34FP7VJ0GZ4M7P0P8Q8R3",
+        "excerpt": "I don't want another thing to charge.",
+        "subreddit": "HeadphoneAdvice",
+        "created_at": "2026-04-26T12:15:00Z",
+        "availability_status": "public",
+        "source_url": "https://reddit.com/r/HeadphoneAdvice/comments/demo5"
+      }
+    ],
+    "opposing_evidence": [
+      {
+        "evidence_id": "ev_01JVA35QX7Q5Q2FTQG9S6ZWY4S",
+        "excerpt": "Cables still fail for me after a few months.",
+        "subreddit": "BuyItForLife",
+        "created_at": "2026-04-29T08:45:00Z",
+        "availability_status": "public",
+        "source_url": "https://reddit.com/r/BuyItForLife/comments/demo6"
+      }
+    ],
+    "top_subreddits": ["Earbuds", "HeadphoneAdvice", "BuyItForLife"],
+    "coverage_note": "full coverage on candidate sources"
+  },
+  "meta": {
+    "evidence_next_page_token": null
+  },
+  "error": null
+}
+

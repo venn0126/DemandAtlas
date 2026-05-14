@@ -1,0 +1,13 @@
+{
+  "request_id": "req_qt_create_cache_hit_001",
+  "data": {
+    "execution_mode": "cache_hit",
+    "query_task_id": "qt_01JVA1HBM4YF2T2M6Q5M5M2F0A",
+    "status": "success",
+    "result_snapshot_id": "rs_01JVA1JD7YQCKRZVMD0W2X5P4M",
+    "cached": true
+  },
+  "meta": {},
+  "error": null
+}
+

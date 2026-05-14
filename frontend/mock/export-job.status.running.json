@@ -1,0 +1,12 @@
+{
+  "request_id": "req_export_status_running_001",
+  "data": {
+    "export_job_id": "exp_01JVA3F5BPB6QYH2FAM0X6G8S0",
+    "status": "running",
+    "download_url": null,
+    "expires_at": null
+  },
+  "meta": {},
+  "error": null
+}
+

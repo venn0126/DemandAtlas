@@ -1,0 +1,71 @@
+{
+  "request_id": "req_board_hot_001",
+  "data": {
+    "board_type": "hot",
+    "items": [
+      {
+        "rank": 1,
+        "cluster_id": "clu_01JVA2G0X9W4N9V6W2JQ1H4A4C",
+        "title": "Users still prefer wired earbuds for reliability",
+        "summary": "Users repeatedly mention reliability, no charging anxiety, and lower latency.",
+        "board_score": 87.2,
+        "discussion_score": 82.0,
+        "attention_score": 79.5,
+        "growth_score": 41.0,
+        "opportunity_score": 73.0,
+        "confidence_score": 88.0,
+        "post_count": 12,
+        "comment_count": 143,
+        "unique_user_count": 56,
+        "is_weak_signal": false,
+        "is_low_confidence": false,
+        "is_emerging_signal": false,
+        "top_subreddits": ["Earbuds", "HeadphoneAdvice"],
+        "highlight_evidence": [
+          {
+            "evidence_id": "ev_01JVA2M3N2X6JYV0T2SR2Y8GF7",
+            "excerpt": "Wired just works.",
+            "subreddit": "Earbuds",
+            "created_at": "2026-04-22T09:00:00Z",
+            "availability_status": "public",
+            "source_url": "https://reddit.com/r/Earbuds/comments/demo1"
+          }
+        ]
+      },
+      {
+        "rank": 2,
+        "cluster_id": "clu_01JVA2HFQYEXN30A94M4EN2HNB",
+        "title": "AI note-taking tools still fail on action-item extraction",
+        "summary": "Users discuss missing follow-up actions, bad summaries, and poor meeting context retention.",
+        "board_score": 84.3,
+        "discussion_score": 76.5,
+        "attention_score": 81.8,
+        "growth_score": 52.7,
+        "opportunity_score": 78.9,
+        "confidence_score": 82.0,
+        "post_count": 9,
+        "comment_count": 121,
+        "unique_user_count": 43,
+        "is_weak_signal": false,
+        "is_low_confidence": false,
+        "is_emerging_signal": false,
+        "top_subreddits": ["productivity", "artificial"],
+        "highlight_evidence": [
+          {
+            "evidence_id": "ev_01JVA2N9KTMT4E6V5H0B7DZT7M",
+            "excerpt": "The summary is fine, but it never captures my next steps properly.",
+            "subreddit": "productivity",
+            "created_at": "2026-04-19T06:30:00Z",
+            "availability_status": "public",
+            "source_url": "https://reddit.com/r/productivity/comments/demo2"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "next_page_token": "board_hot_pg_2_demo"
+  },
+  "error": null
+}
+

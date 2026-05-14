@@ -1,0 +1,15 @@
+{
+  "request_id": "req_tpl_detail_001",
+  "data": {
+    "template_id": "tpl_ai_tools",
+    "template_version_id": "tplv_ai_tools_003",
+    "name": "AI Tools",
+    "description": "AI productivity, automation, and creator tooling",
+    "default_language": "en",
+    "default_view_type": "active",
+    "candidate_subreddit_count": 12
+  },
+  "meta": {},
+  "error": null
+}
+

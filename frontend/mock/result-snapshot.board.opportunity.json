@@ -1,0 +1,42 @@
+{
+  "request_id": "req_board_opportunity_001",
+  "data": {
+    "board_type": "opportunity",
+    "items": [
+      {
+        "rank": 1,
+        "cluster_id": "clu_01JVA2W5A7R6T2KRK0Q4N0D4Y7",
+        "title": "People want simpler ADHD-friendly daily planning systems",
+        "summary": "The need is repeatedly framed around low-friction planning, fewer steps, and visible progress cues.",
+        "board_score": 78.4,
+        "discussion_score": 49.0,
+        "attention_score": 62.0,
+        "growth_score": 44.0,
+        "opportunity_score": 78.4,
+        "confidence_score": 39.0,
+        "post_count": 2,
+        "comment_count": 18,
+        "unique_user_count": 11,
+        "is_weak_signal": false,
+        "is_low_confidence": true,
+        "is_emerging_signal": false,
+        "top_subreddits": ["ADHD", "productivity"],
+        "highlight_evidence": [
+          {
+            "evidence_id": "ev_01JVA2XQ6YXEP0J6F5M2S0KB2A",
+            "excerpt": "Most planners feel like another job, not support.",
+            "subreddit": "ADHD",
+            "created_at": "2026-04-24T10:40:00Z",
+            "availability_status": "public",
+            "source_url": "https://reddit.com/r/ADHD/comments/demo4"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "next_page_token": null
+  },
+  "error": null
+}
+

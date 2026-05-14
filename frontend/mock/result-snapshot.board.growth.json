@@ -1,0 +1,42 @@
+{
+  "request_id": "req_board_growth_001",
+  "data": {
+    "board_type": "growth",
+    "items": [
+      {
+        "rank": 1,
+        "cluster_id": "clu_01JVA2Q5XQWQAPBK5B0C7WQ9YP",
+        "title": "Users are suddenly discussing offline AI transcription on laptops",
+        "summary": "The demand rose quickly around privacy, offline access, and slow cloud upload workflows.",
+        "board_score": 91.0,
+        "discussion_score": 48.0,
+        "attention_score": 55.0,
+        "growth_score": 91.0,
+        "opportunity_score": 76.0,
+        "confidence_score": 66.0,
+        "post_count": 3,
+        "comment_count": 27,
+        "unique_user_count": 14,
+        "is_weak_signal": false,
+        "is_low_confidence": false,
+        "is_emerging_signal": true,
+        "top_subreddits": ["LocalLLaMA", "productivity"],
+        "highlight_evidence": [
+          {
+            "evidence_id": "ev_01JVA2S7TZM5XDV0AF0P2SH80C",
+            "excerpt": "I just want transcription without sending every meeting to the cloud.",
+            "subreddit": "LocalLLaMA",
+            "created_at": "2026-04-28T15:00:00Z",
+            "availability_status": "public",
+            "source_url": "https://reddit.com/r/LocalLLaMA/comments/demo3"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "next_page_token": null
+  },
+  "error": null
+}
+

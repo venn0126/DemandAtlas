@@ -1,0 +1,11 @@
+{
+  "request_id": "req_export_create_001",
+  "data": {
+    "export_job_id": "exp_01JVA3F5BPB6QYH2FAM0X6G8S0",
+    "status": "pending",
+    "poll_url": "/api/v1/export-jobs/exp_01JVA3F5BPB6QYH2FAM0X6G8S0"
+  },
+  "meta": {},
+  "error": null
+}
+

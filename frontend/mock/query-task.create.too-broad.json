@@ -1,0 +1,14 @@
+{
+  "request_id": "req_qt_create_422_001",
+  "data": null,
+  "meta": {},
+  "error": {
+    "code": "QUERY_TOO_BROAD",
+    "message": "query scope is too broad for V1 execution limits",
+    "details": {
+      "max_keywords": 5,
+      "max_subreddits": 20
+    }
+  }
+}
+
