@@ -70,6 +70,8 @@
 - 正式 `openapi/openapi.yaml` 首版草稿
 - TopicTemplate 已支持数据库优先读取（空库 / 异常时回落静态数据）
 - QueryTask / ResultSnapshot 已开始接入数据库优先链路（当前保留静态回退）
+- QueryTask 最小真实数据库链路已验证通过
+- ResultSnapshot 最小真实数据库链路已验证通过
 
 ## 3.5 项目交付推进
 
@@ -95,7 +97,7 @@
 - `apps/worker` Dramatiq + Redis 基础骨架已落地
 - Worker 最小 QueryTask pipeline 占位链路已落地
 - API -> Worker 最小投递链路已落地（Redis 不可用时可降级）
-- Worker -> 数据库最小状态写回链路已开始落地
+- Worker -> 数据库最小状态写回链路已验证通过
 - Ubuntu 海外测试机最小闭环验证已通过
   - 验证记录：`doc/test_server_validation_record_2026-05-14.md`
 
@@ -180,7 +182,7 @@
 
 ### 当前补充结论
 
-当前仓库已从“本地可运行”推进到“测试机可运行”阶段。
+当前仓库已从“本地可运行”推进到“测试机可运行”阶段，并已完成最小真实异步链路验证。
 
 ---
 
@@ -202,8 +204,8 @@
 - 当前最高优先级已切换为：
   1. `docker-compose.yml`
   2. `.env.example`
-  3. `apps/api` 数据库 migration 与基础接口
-  4. `apps/worker` 任务流与实际 job 实现
+  3. `apps/api` 静态回退向真实数据库链路继续替换
+  4. `apps/worker` 占位 pipeline 向真实业务处理继续替换
 
 ## 6.2 辅助脚本
 
@@ -221,6 +223,7 @@
   - `scripts/dev-down.sh`
   - `scripts/run-api.sh`
   - `scripts/run-worker.sh`
+  - `scripts/restart-worker.sh`
   - `scripts/run-web.sh`
   - `scripts/smoke-test.sh`
   - `scripts/seed_topic_templates.py`

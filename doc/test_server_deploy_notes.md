@@ -191,6 +191,12 @@ cd /srv/demand-atlas
   - `run_query_task_pipeline`
 - 若 Redis 不可达，worker 无法正常消费任务
 
+如需无痛重启 Worker，建议使用：
+
+```bash
+./scripts/restart-worker.sh
+```
+
 ### Step 8：启动 Web
 
 ```bash

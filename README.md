@@ -86,6 +86,12 @@ uv run alembic upgrade head
 ./scripts/run-worker.sh
 ```
 
+如需重启 Worker：
+
+```bash
+./scripts/restart-worker.sh
+```
+
 8. 执行 smoke test
 
 ```bash
@@ -220,6 +226,12 @@ To restart the API cleanly:
 
 ```bash
 ./scripts/run-worker.sh
+```
+
+To restart the worker cleanly:
+
+```bash
+./scripts/restart-worker.sh
 ```
 
 8. Run the smoke test

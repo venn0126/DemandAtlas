@@ -56,7 +56,7 @@
 
 ### BE-02
 
-- 状态：已完成（代码与离线验证）
+- 状态：已完成（代码、离线验证、测试机在线验证）
 - 验证项：
   - [x] 核心表 migration 已建立
   - [x] 本地数据库初始化路径明确
@@ -88,9 +88,9 @@
     - 成功生成建表 SQL
   - 已通过 Python 编译验证：
     - `uv run python -m compileall app`
-  - 当前阻塞：
-    - 本机 Docker daemon / PostgreSQL 实例不可用
-    - 因此暂未完成在线 `alembic upgrade head` 验证
+  - 已在 Ubuntu 测试机完成在线验证：
+    - `uv run alembic upgrade head`
+    - 执行通过
 
 ### BE-03
 
@@ -206,5 +206,5 @@ Sprint 01 后端骨架主链已完成：
 
 当前说明：
 
-- 以上接口为静态 / 种子 / mock 风格实现
-- 在线数据库 migration 仍待本机数据库实例可用后补做一次真实验证
+- 当前接口已进入“数据库优先 + 静态回退”阶段
+- Ubuntu 测试机已完成在线 migration 与最小真实异步链路验证

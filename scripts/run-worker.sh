@@ -12,4 +12,4 @@ fi
 echo "[run-worker] root: ${ROOT_DIR}"
 
 cd "${ROOT_DIR}/apps/worker"
-uv run dramatiq worker.jobs.health worker.jobs.query_task_pipeline
+uv run dramatiq worker.main
