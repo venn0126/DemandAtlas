@@ -47,7 +47,7 @@ def create_query_task_record(
         language=payload.get("language", "en"),
         region_hints={"items": payload.get("region_hints", [])},
         min_engagement_threshold=payload.get("min_engagement_threshold") or {},
-        view_type=payload.get("view_type", "active"),
+        view_type=payload.get("view_type") or "active",
         window_start=window_start,
         window_end=window_end,
         compare_window_start=None,

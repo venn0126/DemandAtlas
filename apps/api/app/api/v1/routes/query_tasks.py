@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, Response
@@ -18,6 +19,7 @@ from app.integrations.worker_client import enqueue_query_task_pipeline
 from app.services.query_task_service import create_query_task_from_db, create_query_task_response
 
 router = APIRouter(tags=["QueryTasks"])
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -31,7 +33,8 @@ def create_query_task(
 ) -> dict:
     try:
         status_code, result = create_query_task_from_db(db, payload.model_dump())
-    except Exception:
+    except Exception as exc:
+        logger.warning("create_query_task fell back to static response: %s", exc)
         status_code, result = create_query_task_response(payload.model_dump())
     response.status_code = status_code
 
