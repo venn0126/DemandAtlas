@@ -1,5 +1,9 @@
 import { Banner } from '../components/common/banner'
 import { Card } from '../components/common/card'
+import { SelectField } from '../components/common/select-field'
+import { Page } from '../components/layout/page'
+import { PageHeader } from '../components/layout/page-header'
+import { Stack } from '../components/layout/stack'
 import { useI18n } from '../i18n/use-i18n'
 
 import { useAppStore } from '../stores/app-store'
@@ -10,38 +14,38 @@ export function SettingsPage() {
   const setMockMode = useAppStore((state) => state.setMockMode)
 
   return (
-    <section className="page-section">
-      <div className="page-header">
-        <span className="eyebrow">{t('settings.eyebrow')}</span>
-        <h1>{t('settings.title')}</h1>
-        <p className="page-description">{t('settings.description')}</p>
-      </div>
+    <Page>
+      <PageHeader
+        eyebrow={t('settings.eyebrow')}
+        title={t('settings.title')}
+        description={t('settings.description')}
+      />
 
       <Banner title={t('settings.banner.title')} tone="warning">
         {t('settings.banner.description')}
       </Banner>
 
-      <Card className="stack-md">
-        <label className="ui-field">
-          <span className="ui-field-label">{t('settings.locale.label')}</span>
-          <select
-            className="ui-input"
+      <Card>
+        <Stack gap="md">
+          <SelectField
+            label={t('settings.locale.label')}
             value={locale}
             onChange={(event) => setLocale(event.target.value as 'en' | 'zh')}
-          >
-            <option value="en">{t('settings.locale.en')}</option>
-            <option value="zh">{t('settings.locale.zh')}</option>
-          </select>
-        </label>
-        <label className="toggle-row">
-          <span>{t('common.label.mockMode')}</span>
-          <input
-            type="checkbox"
-            checked={mockMode}
-            onChange={(event) => setMockMode(event.target.checked)}
+            options={[
+              { value: 'en', label: t('settings.locale.en') },
+              { value: 'zh', label: t('settings.locale.zh') },
+            ]}
           />
-        </label>
+          <label className="toggle-row">
+            <span>{t('common.label.mockMode')}</span>
+            <input
+              type="checkbox"
+              checked={mockMode}
+              onChange={(event) => setMockMode(event.target.checked)}
+            />
+          </label>
+        </Stack>
       </Card>
-    </section>
+    </Page>
   )
 }

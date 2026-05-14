@@ -1,184 +1,110 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-
-import { Badge } from '../components/common/badge'
 import { Banner } from '../components/common/banner'
 import { Card } from '../components/common/card'
 import { EmptyState } from '../components/common/empty-state'
 import { ErrorState } from '../components/common/error-state'
 import { LoadingState } from '../components/common/loading-state'
 import { Tabs } from '../components/common/tabs'
-import { useI18n } from '../i18n/use-i18n'
-import { formatUtcDateTime } from '../lib/format'
-import { queryKeys } from '../lib/query-keys'
-import { getBoardResult, getResultSnapshotSummary } from '../services/mock-api'
+import { Grid } from '../components/layout/grid'
+import { MetaRow } from '../components/layout/meta-row'
+import { Page } from '../components/layout/page'
+import { PageHeader } from '../components/layout/page-header'
+import { useResultPage } from '../hooks/use-result-page'
+import { ResultBoardItem } from '../components/result/result-board-item'
+import { ResultSummaryCard } from '../components/result/result-summary-card'
 
 export function ResultPage() {
-  const { locale, t, tDynamic } = useI18n()
-  const navigate = useNavigate()
-  const { resultSnapshotId, boardType } = useParams()
-  const [activeBoard, setActiveBoard] = useState(boardType ?? 'hot')
-
-  const summaryMode =
-    resultSnapshotId === 'rs_01JVA1PAB2Y9PGKQ7NH1AK6R9M'
-      ? 'partial'
-      : resultSnapshotId === 'rs_01JVA2120R3D39SY1CMN18R8QW'
-        ? 'empty'
-        : 'normal'
-
-  const summaryQuery = useQuery({
-    queryKey: [...queryKeys.resultPreview, resultSnapshotId, summaryMode],
-    queryFn: () => getResultSnapshotSummary(summaryMode),
-  })
-
-  const boardQuery = useQuery({
-    queryKey: ['board-result', resultSnapshotId, activeBoard, summaryMode],
-    queryFn: () =>
-      getBoardResult(summaryMode === 'empty' ? 'empty' : (activeBoard as 'hot' | 'growth' | 'opportunity')),
-  })
-
-  const summary = summaryQuery.data?.data
-  const board = boardQuery.data?.data
+  const vm = useResultPage()
 
   return (
-    <section className="page-section">
-      <div className="page-header">
-        <span className="eyebrow">{t('result.eyebrow')}</span>
-        <h1>{t('result.title')}</h1>
-        <p className="page-description">{t('result.description')}</p>
-      </div>
+    <Page>
+      <PageHeader
+        eyebrow={vm.eyebrow}
+        title={vm.title}
+        description={vm.description}
+      />
 
-      {summaryQuery.isLoading ? (
-        <LoadingState title={t('result.loadingSummary.title')} />
+      {vm.summaryQuery.isLoading ? (
+        <LoadingState title={vm.labels.loadingSummary} />
       ) : null}
-      {summaryQuery.isError ? (
+      {vm.summaryQuery.isError ? (
         <ErrorState
-          title={t('result.errorSummary.title')}
-          description={t('result.errorSummary.description')}
+          title={vm.labels.errorSummaryTitle}
+          description={vm.labels.errorSummaryDescription}
         />
       ) : null}
 
-      {summary ? (
+      {vm.summary ? (
         <>
           <Card className="stack-lg">
-            <div className="task-status-top">
-              <div className="badge-row">
-                <Badge tone="success">{tDynamic('enum.viewType', summary.view_type)}</Badge>
-                <Badge>{tDynamic('enum.queryType', summary.query_type)}</Badge>
-              </div>
-              <p className="mono-text">{summary.result_snapshot_id}</p>
-            </div>
-
-            <div className="task-stat-grid">
-              <div className="task-stat">
-                <span className="task-stat-label">{t('result.stats.clusters')}</span>
-                <strong>{summary.summary_stats.cluster_count}</strong>
-              </div>
-              <div className="task-stat">
-                <span className="task-stat-label">{t('result.stats.posts')}</span>
-                <strong>{summary.summary_stats.post_count}</strong>
-              </div>
-              <div className="task-stat">
-                <span className="task-stat-label">{t('result.stats.comments')}</span>
-                <strong>{summary.summary_stats.comment_count}</strong>
-              </div>
-            </div>
-
-            <div className="stack-md">
-              <p>
-                {t('result.meta.queryTaskId')}: {summary.query_task_id}
-              </p>
-              <p>
-                {t('result.meta.generatedAt')}:{' '}
-                {formatUtcDateTime(summary.generated_at, locale)}
-              </p>
-            </div>
+            <ResultSummaryCard
+              summary={vm.summary}
+              viewTypeLabel={vm.summary.view_type}
+              queryTypeLabel={vm.summary.query_type}
+              clusterLabel={vm.labels.clusterLabel}
+              postLabel={vm.labels.postLabel}
+              commentLabel={vm.labels.commentLabel}
+              queryTaskIdLabel={vm.labels.queryTaskIdLabel}
+              generatedAtLabel={vm.labels.generatedAtLabel}
+              generatedAt={vm.labels.generatedAtValue}
+            />
           </Card>
 
-          {summary.coverage_note ? (
-            <Banner title={t('result.coverage.title')} tone="warning">
-              {summary.coverage_note}
+          {vm.summary.coverage_note ? (
+            <Banner title={vm.labels.coverageTitle} tone="warning">
+              {vm.summary.coverage_note}
             </Banner>
           ) : null}
 
-          <Banner title={t('result.freshness.title')} tone="info">
-            {summary.sync_freshness_note}
+          <Banner title={vm.labels.freshnessTitle} tone="info">
+            {vm.summary.sync_freshness_note}
           </Banner>
 
           <Card className="stack-lg">
-            <div className="task-status-top">
-              <Tabs
-                value={activeBoard}
-                onChange={(value) => {
-                  setActiveBoard(value)
-                  navigate(`/results/${resultSnapshotId}/boards/${value}`)
-                }}
-                items={summary.available_boards.map((item) => ({
-                  key: item,
-                  label: tDynamic('enum.boardType', item),
-                }))}
-              />
-            </div>
+            <MetaRow
+              left={
+                <Tabs
+                  value={vm.activeBoard}
+                  onChange={(value) => vm.setActiveBoard(value)}
+                  items={vm.boardTabOptions.map((item) => ({
+                    key: item.value,
+                    label: item.label,
+                  }))}
+                />
+              }
+            />
 
-            {boardQuery.isLoading ? (
-              <LoadingState title={t('result.loadingBoard.title')} />
+            {vm.boardQuery.isLoading ? (
+              <LoadingState title={vm.labels.loadingBoard} />
             ) : null}
-            {boardQuery.isError ? (
+            {vm.boardQuery.isError ? (
               <ErrorState
-                title={t('result.errorBoard.title')}
-                description={t('result.errorBoard.description')}
+                title={vm.labels.errorBoardTitle}
+                description={vm.labels.errorBoardDescription}
               />
             ) : null}
 
-            {board?.items.length ? (
-              <div className="result-list">
-                {board.items.map((item) => (
-                  <Link
-                    key={item.cluster_id}
-                    to={`/results/${resultSnapshotId}/clusters/${item.cluster_id}`}
-                    className="result-link"
-                  >
-                    <article className="result-item">
-                      <div className="task-status-top">
-                        <div>
-                          <p className="mono-text">#{item.rank}</p>
-                          <h3>{item.title}</h3>
-                        </div>
-                        <div className="badge-row">
-                          <Badge tone="info">{item.board_score.toFixed(1)}</Badge>
-                          {item.is_emerging_signal ? (
-                            <Badge tone="info">{t('result.badge.emerging')}</Badge>
-                          ) : null}
-                          {item.is_low_confidence ? (
-                            <Badge tone="warning">{t('result.badge.lowConfidence')}</Badge>
-                          ) : null}
-                          {item.is_weak_signal ? (
-                            <Badge tone="warning">{t('result.badge.weakSignal')}</Badge>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <p>{item.summary}</p>
-
-                      <div className="badge-row">
-                        {item.top_subreddits.map((subreddit) => (
-                          <Badge key={subreddit}>{subreddit}</Badge>
-                        ))}
-                      </div>
-                    </article>
-                  </Link>
+            {vm.board?.items.length ? (
+              <Grid variant="result">
+                {vm.boardItems.map((item) => (
+                  <ResultBoardItem
+                    key={item.clusterId}
+                    resultSnapshotId={vm.resultSnapshotId ?? ''}
+                    item={item}
+                    emergingLabel={vm.labels.emerging}
+                    lowConfidenceLabel={vm.labels.lowConfidence}
+                    weakSignalLabel={vm.labels.weakSignal}
+                  />
                 ))}
-              </div>
+              </Grid>
             ) : (
               <EmptyState
-                title={t('result.empty.title')}
-                description={t('result.empty.description')}
+                title={vm.labels.emptyTitle}
+                description={vm.labels.emptyDescription}
               />
             )}
           </Card>
         </>
       ) : null}
-    </section>
+    </Page>
   )
 }

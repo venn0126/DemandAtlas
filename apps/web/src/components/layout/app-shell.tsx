@@ -1,14 +1,15 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { useI18n } from '../../i18n/use-i18n'
+import { routes } from '../../app/routes'
 
 export function AppShell() {
   const { t } = useI18n()
   const navItems = [
-    { to: '/', label: t('nav.home') },
-    { to: '/discover/one-click', label: t('nav.oneClick') },
-    { to: '/discover/directed', label: t('nav.directed') },
-    { to: '/settings', label: t('nav.settings') },
+    { to: routes.home, label: t('nav.home') },
+    { to: routes.oneClick, label: t('nav.oneClick') },
+    { to: routes.directed, label: t('nav.directed') },
+    { to: routes.settings, label: t('nav.settings') },
   ]
 
   return (

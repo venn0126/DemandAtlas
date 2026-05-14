@@ -1,163 +1,117 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
-import { Badge } from '../components/common/badge'
+import { routeBuilders, routes } from '../app/routes'
 import { Banner } from '../components/common/banner'
 import { Button } from '../components/common/button'
 import { Card } from '../components/common/card'
 import { ErrorState } from '../components/common/error-state'
-import { useI18n } from '../i18n/use-i18n'
-import { ProgressBar } from '../components/task/progress-bar'
-import { getQueryTaskStatus } from '../services/mock-api'
+import { SelectField } from '../components/common/select-field'
+import { InlineGroup } from '../components/layout/inline-group'
+import { Page } from '../components/layout/page'
+import { PageHeader } from '../components/layout/page-header'
+import { Stack } from '../components/layout/stack'
+import { useTaskPage } from '../hooks/use-task-page'
+import { TaskStatusCard } from '../components/task/task-status-card'
+import { TaskSummaryCard } from '../components/task/task-summary-card'
 
 export function TaskPage() {
-  const { t, tDynamic } = useI18n()
-  const { queryTaskId } = useParams()
-  const [statusMode, setStatusMode] = useState<
-    'pending' | 'running' | 'partial_success' | 'success' | 'failed'
-  >('running')
-  const taskQuery = useQuery({
-    queryKey: ['query-task-status', statusMode],
-    queryFn: () => getQueryTaskStatus(statusMode),
-  })
-
-  const task = taskQuery.data?.data
-  const taskError = taskQuery.data?.error
-  const canViewResult = Boolean(task?.result_snapshot_id)
+  const vm = useTaskPage()
 
   return (
-    <section className="page-section">
-      <div className="page-header">
-        <span className="eyebrow">{t('task.eyebrow')}</span>
-        <h1>{t('task.title')}</h1>
-        <p className="page-description">{t('task.description')}</p>
-      </div>
+    <Page>
+      <PageHeader
+        eyebrow={vm.eyebrow}
+        title={vm.title}
+        description={vm.description}
+      />
 
-      <Card className="stack-md">
-        <label className="ui-field">
-          <span className="ui-field-label">{t('task.scenario.label')}</span>
-          <select
-            className="ui-input"
-            value={statusMode}
+      <Card>
+        <Stack gap="md">
+          <SelectField
+            label={vm.labels.scenario}
+            value={vm.statusMode}
             onChange={(event) =>
-              setStatusMode(
+              vm.setStatusMode(
                 event.target.value as 'pending' | 'running' | 'partial_success' | 'success' | 'failed',
               )
             }
-          >
-            <option value="pending">{tDynamic('enum.taskStatus', 'pending')}</option>
-            <option value="running">{tDynamic('enum.taskStatus', 'running')}</option>
-            <option value="partial_success">
-              {tDynamic('enum.taskStatus', 'partial_success')}
-            </option>
-            <option value="success">{tDynamic('enum.taskStatus', 'success')}</option>
-            <option value="failed">{tDynamic('enum.taskStatus', 'failed')}</option>
-          </select>
-        </label>
+            options={vm.statusOptions}
+          />
+        </Stack>
       </Card>
 
-      {taskQuery.isLoading ? (
-        <Banner title={t('task.loading.title')} tone="info">
-          {t('task.loading.description')}
+      {vm.taskQuery.isLoading ? (
+        <Banner title={vm.labels.loadingTitle} tone="info">
+          {vm.labels.loadingDescription}
         </Banner>
-      ) : task ? (
+      ) : vm.task ? (
         <>
           <Card className="stack-lg">
-            <div className="task-status-top">
-              <div className="badge-row">
-                <Badge
-                  tone={
-                    task.status === 'failed'
-                      ? 'danger'
-                      : task.status === 'partial_success'
-                        ? 'warning'
-                        : task.status === 'success'
-                          ? 'success'
-                          : 'info'
-                  }
-                >
-                  {tDynamic('enum.taskStatus', task.status)}
-                </Badge>
-                <Badge>{tDynamic('enum.stage', task.current_stage ?? 'waiting')}</Badge>
-              </div>
-              <p className="mono-text">{task.query_task_id ?? queryTaskId}</p>
-            </div>
-
-            <ProgressBar percent={task.progress.percent} />
-
-            <div className="task-stat-grid">
-              <div className="task-stat">
-                <span className="task-stat-label">{t('task.stats.currentStep')}</span>
-                <strong>{task.progress.current_step}</strong>
-              </div>
-              <div className="task-stat">
-                <span className="task-stat-label">{t('task.stats.totalSteps')}</span>
-                <strong>{task.progress.total_steps}</strong>
-              </div>
-              <div className="task-stat">
-                <span className="task-stat-label">{t('task.stats.progress')}</span>
-                <strong>{task.progress.percent}%</strong>
-              </div>
-            </div>
+            <TaskStatusCard
+              taskId={vm.taskStatusViewModel?.taskId ?? ''}
+              statusLabel={vm.taskStatusViewModel?.statusLabel ?? ''}
+              stageLabel={vm.taskStatusViewModel?.stageLabel ?? ''}
+              statusTone={vm.taskStatusViewModel?.statusTone ?? 'info'}
+              currentStep={vm.taskStatusViewModel?.currentStep ?? 0}
+              totalSteps={vm.taskStatusViewModel?.totalSteps ?? 0}
+              progressPercent={vm.taskStatusViewModel?.progressPercent ?? 0}
+              currentStepLabel={vm.labels.currentStep}
+              totalStepsLabel={vm.labels.totalSteps}
+              progressLabel={vm.labels.progress}
+            />
           </Card>
 
-          <Card className="stack-md">
-            <h2>{t('task.summary.title')}</h2>
-            <p>
-              {t('task.summary.queryTaskId')}: {queryTaskId}
-            </p>
-            <p>
-              {t('task.summary.viewType')}: {tDynamic('enum.viewType', 'active')}
-            </p>
-            <p>
-              {t('task.summary.timeWindow')}: {t('common.value.last30Days')}
-            </p>
+          <Card>
+            <TaskSummaryCard title={vm.labels.summaryTitle} rows={vm.summaryRows} />
           </Card>
 
-          {task.coverage_note ? (
-            <Banner title={t('task.coverage.title')} tone="warning">
-              {task.coverage_note}
+          {vm.task.coverage_note ? (
+            <Banner title={vm.labels.coverageTitle} tone="warning">
+              {vm.task.coverage_note}
             </Banner>
           ) : null}
 
-          {task.warnings.length ? (
-            <Card className="stack-md">
-              <h2>{t('task.warnings.title')}</h2>
-              <ul className="bullet-list">
-                {task.warnings.map((warning) => (
-                  <li key={warning.code}>
-                    <strong>{warning.code}</strong>: {warning.message}
-                  </li>
-                ))}
-              </ul>
+          {vm.task.warnings.length ? (
+            <Card>
+              <Stack gap="md">
+                <h2>{vm.labels.warningsTitle}</h2>
+                <ul className="bullet-list">
+                  {vm.task.warnings.map((warning) => (
+                    <li key={warning.code}>
+                      <strong>{warning.code}</strong>: {warning.message}
+                    </li>
+                  ))}
+                </ul>
+              </Stack>
             </Card>
           ) : null}
 
-          <Card className="stack-md">
-            <h2>{t('task.actions.title')}</h2>
-            <div className="page-actions">
-              <Button onClick={() => void taskQuery.refetch()}>
-                {t('task.actions.refresh')}
-              </Button>
-              <Link to="/discover/directed">
-                <Button variant="secondary">{t('task.actions.backToEdit')}</Button>
-              </Link>
-              {canViewResult ? (
-                <Link to={`/results/${task.result_snapshot_id}`}>
-                  <Button>{t('task.actions.viewResult')}</Button>
+          <Card>
+            <Stack gap="md">
+              <h2>{vm.labels.actionsTitle}</h2>
+              <InlineGroup variant="actions">
+                <Button onClick={() => void vm.taskQuery.refetch()}>
+                  {vm.labels.refresh}
+                </Button>
+                <Link to={routes.directed}>
+                  <Button variant="secondary">{vm.labels.backToEdit}</Button>
                 </Link>
-              ) : null}
-            </div>
+                {vm.canViewResult && vm.task.result_snapshot_id ? (
+                  <Link to={routeBuilders.result(vm.task.result_snapshot_id)}>
+                    <Button>{vm.labels.viewResult}</Button>
+                  </Link>
+                ) : null}
+              </InlineGroup>
+            </Stack>
           </Card>
 
-          {task.status === 'failed' && taskError ? (
+          {vm.task.status === 'failed' && vm.taskError ? (
             <ErrorState
-              title={taskError.code}
-              description={taskError.message}
+              title={vm.taskError.code}
+              description={vm.taskError.message}
               action={
-                <Link to="/discover/directed">
-                  <Button variant="secondary">{t('task.actions.retryFromQuery')}</Button>
+                <Link to={routes.directed}>
+                  <Button variant="secondary">{vm.labels.retryFromQuery}</Button>
                 </Link>
               }
             />
@@ -165,10 +119,10 @@ export function TaskPage() {
         </>
       ) : (
         <ErrorState
-          title={t('task.error.missingTitle')}
-          description={t('task.error.missingDescription')}
+          title={vm.labels.missingTitle}
+          description={vm.labels.missingDescription}
         />
       )}
-    </section>
+    </Page>
   )
 }

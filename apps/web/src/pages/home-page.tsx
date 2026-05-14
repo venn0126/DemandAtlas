@@ -1,12 +1,18 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
+import { routes } from '../app/routes'
 import { Badge } from '../components/common/badge'
 import { Banner } from '../components/common/banner'
 import { Button } from '../components/common/button'
 import { Card } from '../components/common/card'
 import { ErrorState } from '../components/common/error-state'
 import { LoadingState } from '../components/common/loading-state'
+import { HomeTemplateCard } from '../components/home/home-template-card'
+import { Grid } from '../components/layout/grid'
+import { InlineGroup } from '../components/layout/inline-group'
+import { Page } from '../components/layout/page'
+import { PageHeader } from '../components/layout/page-header'
 import { useI18n } from '../i18n/use-i18n'
 import { queryKeys } from '../lib/query-keys'
 import { listTopicTemplates } from '../services/mock-api'
@@ -19,33 +25,33 @@ export function HomePage() {
   })
 
   return (
-    <section className="page-section">
-      <div className="page-header">
-        <span className="eyebrow">Sprint 01 / FE-01</span>
-        <h1>{t('home.title')}</h1>
-        <p className="page-description">{t('home.description')}</p>
-      </div>
+    <Page>
+      <PageHeader
+        eyebrow="Sprint 01 / FE-01"
+        title={t('home.title')}
+        description={t('home.description')}
+      />
 
       <Banner title={t('home.banner.title')} tone="info">
         {t('home.banner.description')}
       </Banner>
 
-      <div className="page-actions">
-        <Link to="/discover/one-click">
+      <InlineGroup variant="actions">
+        <Link to={routes.oneClick}>
           <Button>{t('home.actions.oneClick')}</Button>
         </Link>
-        <Link to="/discover/directed">
+        <Link to={routes.directed}>
           <Button variant="secondary">{t('home.actions.directed')}</Button>
         </Link>
-      </div>
+      </InlineGroup>
 
-      <div className="panel-grid">
+      <Grid variant="panel">
         <Card>
           <h2>{t('home.currentScope.title')}</h2>
-          <div className="badge-row">
+          <InlineGroup variant="badges">
             <Badge tone="success">{t('home.currentScope.routerReady')}</Badge>
             <Badge tone="info">{t('home.currentScope.mockReady')}</Badge>
-          </div>
+          </InlineGroup>
           <ul className="bullet-list">
             <li>{t('home.currentScope.item.router')}</li>
             <li>{t('home.currentScope.item.appShell')}</li>
@@ -64,29 +70,18 @@ export function HomePage() {
             />
           ) : null}
           {templateQuery.data?.data.items?.length ? (
-            <div className="template-grid">
+            <Grid variant="template">
               {templateQuery.data.data.items.map((item) => (
-                <Link
-                  key={item.template_id}
-                  to={`/discover/one-click?templateId=${item.template_id}`}
-                  className="template-link"
-                >
-                  <div className="template-card">
-                    <div className="badge-row">
-                      <Badge tone="info">
-                        {tDynamic('enum.viewType', item.default_view_type)}
-                      </Badge>
-                      <Badge>{item.default_language}</Badge>
-                    </div>
-                    <h3>{item.name}</h3>
-                    <p>{item.description}</p>
-                  </div>
-                </Link>
+                  <HomeTemplateCard
+                    key={item.template_id}
+                    template={item}
+                    viewTypeLabel={tDynamic('enum.viewType', item.default_view_type)}
+                  />
               ))}
-            </div>
+            </Grid>
           ) : null}
         </Card>
-      </div>
-    </section>
+      </Grid>
+    </Page>
   )
 }

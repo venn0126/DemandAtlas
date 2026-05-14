@@ -1,4 +1,13 @@
 import { mockData } from '../lib/mock-data'
+import type {
+  QueryTaskCreateResponse,
+  QueryTaskStatus,
+  QueryTaskStatusResponse,
+  TopicTemplateDetailResponse,
+  TopicTemplateListResponse,
+} from '../types/query'
+import type { ClusterDetailResponse } from '../types/detail'
+import type { BoardResultResponse, BoardType, ResultSnapshotSummaryResponse } from '../types/result'
 
 function sleep(ms: number) {
   return new Promise((resolve) => {
@@ -6,39 +15,19 @@ function sleep(ms: number) {
   })
 }
 
-type TopicTemplateListResponse = typeof mockData.topicTemplatesList
-type TopicTemplateDetailResponse = typeof mockData.topicTemplateDetail
-type QueryTaskCreateAsyncResponse = typeof mockData.queryTaskCreateAsync
-type QueryTaskCreateCacheHitResponse = typeof mockData.queryTaskCreateCacheHit
-type QueryTaskCreateTooBroadResponse = {
-  request_id: string
-  data: null
-  meta: Record<string, never>
-  error: {
-    code: string
-    message: string
-    details: {
-      max_keywords: number
-      max_subreddits: number
-    }
-  }
-}
-
 export async function listTopicTemplates(): Promise<TopicTemplateListResponse> {
   await sleep(150)
-  return mockData.topicTemplatesList
+  return mockData.topicTemplatesList as TopicTemplateListResponse
 }
 
 export async function getTopicTemplateDetail(): Promise<TopicTemplateDetailResponse> {
   await sleep(120)
-  return mockData.topicTemplateDetail
+  return mockData.topicTemplateDetail as TopicTemplateDetailResponse
 }
 
 export async function createQueryTask(
   mode: 'async' | 'cache-hit' | 'too-broad' = 'async',
-): Promise<
-  QueryTaskCreateAsyncResponse | QueryTaskCreateCacheHitResponse | QueryTaskCreateTooBroadResponse
-> {
+): Promise<QueryTaskCreateResponse> {
   await sleep(250)
 
   if (mode === 'too-broad') {
@@ -58,13 +47,13 @@ export async function createQueryTask(
   }
 
   return mode === 'cache-hit'
-    ? mockData.queryTaskCreateCacheHit
-    : mockData.queryTaskCreateAsync
+    ? (mockData.queryTaskCreateCacheHit as QueryTaskCreateResponse)
+    : (mockData.queryTaskCreateAsync as QueryTaskCreateResponse)
 }
 
 export async function getQueryTaskStatus(
-  status: 'pending' | 'running' | 'partial_success' | 'success' | 'failed' = 'running',
-) {
+  status: QueryTaskStatus = 'running',
+): Promise<QueryTaskStatusResponse> {
   await sleep(180)
 
   const statusMap = {
@@ -75,12 +64,12 @@ export async function getQueryTaskStatus(
     failed: mockData.queryTaskStatusFailed,
   }
 
-  return statusMap[status]
+  return statusMap[status] as QueryTaskStatusResponse
 }
 
 export async function getResultSnapshotSummary(
   mode: 'normal' | 'empty' | 'partial' = 'normal',
-) {
+): Promise<ResultSnapshotSummaryResponse> {
   await sleep(180)
 
   const summaryMap = {
@@ -89,12 +78,12 @@ export async function getResultSnapshotSummary(
     partial: mockData.resultSnapshotSummaryPartial,
   }
 
-  return summaryMap[mode]
+  return summaryMap[mode] as ResultSnapshotSummaryResponse
 }
 
 export async function getBoardResult(
-  boardType: 'hot' | 'growth' | 'opportunity' | 'empty' = 'hot',
-) {
+  boardType: BoardType | 'empty' = 'hot',
+): Promise<BoardResultResponse> {
   await sleep(180)
 
   const boardMap = {
@@ -104,12 +93,14 @@ export async function getBoardResult(
     empty: mockData.resultSnapshotBoardEmpty,
   }
 
-  return boardMap[boardType]
+  return boardMap[boardType] as BoardResultResponse
 }
 
-export async function getClusterDetail(mode: 'normal' | 'partial' = 'normal') {
+export async function getClusterDetail(
+  mode: 'normal' | 'partial' = 'normal',
+): Promise<ClusterDetailResponse> {
   await sleep(180)
   return mode === 'partial'
-    ? mockData.clusterDetailPartialEvidence
-    : mockData.clusterDetailNormal
+    ? (mockData.clusterDetailPartialEvidence as ClusterDetailResponse)
+    : (mockData.clusterDetailNormal as ClusterDetailResponse)
 }
