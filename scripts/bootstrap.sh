@@ -35,8 +35,12 @@ else
   echo "[bootstrap] skip: apps/web/package.json not found"
 fi
 
-if [[ -d "${ROOT_DIR}/apps/worker" ]]; then
-  echo "[bootstrap] info: apps/worker exists"
+if [[ -f "${ROOT_DIR}/apps/worker/pyproject.toml" ]]; then
+  echo "[bootstrap] syncing Python dependencies for apps/worker"
+  (
+    cd "${ROOT_DIR}/apps/worker"
+    uv sync
+  )
 else
   echo "[bootstrap] info: apps/worker is not initialized yet"
 fi

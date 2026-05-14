@@ -3,6 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [[ -f "${ROOT_DIR}/.env" ]]; then
+  set -a
+  source "${ROOT_DIR}/.env"
+  set +a
+fi
+
 echo "[dev-down] root: ${ROOT_DIR}"
 
 if ! command -v docker >/dev/null 2>&1; then
@@ -22,4 +28,3 @@ echo "[dev-down] stopping local dependencies"
 )
 
 echo "[dev-down] done"
-

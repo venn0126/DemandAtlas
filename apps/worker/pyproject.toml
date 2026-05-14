@@ -1,18 +1,14 @@
 [project]
-name = "demand-atlas-api"
+name = "demand-atlas-worker"
 version = "0.1.0"
-description = "Demand Atlas API service"
+description = "Demand Atlas worker service"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "dramatiq[redis]>=2.1.0",
-  "fastapi>=0.115.0",
-  "uvicorn[standard]>=0.30.0",
+  "dramatiq[redis]>=1.17.0",
   "pydantic>=2.8.0",
   "pydantic-settings>=2.4.0",
-  "psycopg[binary]>=3.2.0",
-  "sqlalchemy>=2.0.0",
-  "alembic>=1.13.0",
+  "redis>=5.0.0",
 ]
 
 [tool.uv]
@@ -24,3 +20,4 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+

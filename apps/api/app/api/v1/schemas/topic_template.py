@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ApiMeta(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
 
 class ApiError(BaseModel):

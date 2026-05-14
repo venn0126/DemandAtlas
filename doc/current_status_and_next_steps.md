@@ -80,6 +80,7 @@
 - 灰度观察模板
 - 结果质量评审模板
 - 上线后问题分级与处置手册
+- 测试机准备清单与启动说明文档
 
 ## 3.6 工程启动方案
 
@@ -89,6 +90,9 @@
 - 开发与部署工作流（已明确不采用“推文件到服务器目录”的主流程）
 - `apps/api` FastAPI 基础骨架已落地
 - 后端健康检查已可本地启动验证
+- `apps/worker` Dramatiq + Redis 基础骨架已落地
+- Worker 最小 QueryTask pipeline 占位链路已落地
+- API -> Worker 最小投递链路已落地（Redis 不可用时可降级）
 
 ---
 
@@ -190,7 +194,7 @@
   1. `docker-compose.yml`
   2. `.env.example`
   3. `apps/api` 数据库 migration 与基础接口
-  4. `apps/worker`
+  4. `apps/worker` 任务流与实际 job 实现
 
 ## 6.2 辅助脚本
 
@@ -206,10 +210,17 @@
   - `scripts/bootstrap.sh`
   - `scripts/dev-up.sh`
   - `scripts/dev-down.sh`
+  - `scripts/run-api.sh`
+  - `scripts/run-worker.sh`
+  - `scripts/run-web.sh`
   - `scripts/smoke-test.sh`
+  - `scripts/server-bootstrap-ubuntu.sh`
+  - `scripts/server-deploy.sh`
+  - `scripts/server-stop.sh`
 - 当前脚本已完成静态校验：
   - `bash -n` 通过
 - `scripts/bootstrap.sh` 已完成实际执行验证
+- `scripts/bootstrap.sh` 已接入 `apps/worker` 依赖初始化
 - 当前脚本运行依赖：
   - Docker daemon 可用
   - 本地 API / Web 已启动（针对 `smoke-test.sh`）

@@ -65,18 +65,22 @@ uv run alembic upgrade head
 5. 启动后端 API
 
 ```bash
-cd apps/api
-uv run uvicorn app.main:app --reload --port 8000
+./scripts/run-api.sh
 ```
 
 6. 启动前端
 
 ```bash
-cd apps/web
-pnpm dev
+./scripts/run-web.sh
 ```
 
-7. 执行 smoke test
+7. 启动 Worker
+
+```bash
+./scripts/run-worker.sh
+```
+
+8. 执行 smoke test
 
 ```bash
 ./scripts/smoke-test.sh
@@ -105,6 +109,24 @@ pnpm dev
 - 能执行后端 migration
 - 能启动 API / Web
 - 能跑 `scripts/smoke-test.sh`
+
+如需 Ubuntu 测试机一键安装基础依赖，可执行：
+
+```bash
+./scripts/server-bootstrap-ubuntu.sh
+```
+
+如需在测试机上一键拉起当前仓库版本，可执行：
+
+```bash
+./scripts/server-deploy.sh
+```
+
+停止可执行：
+
+```bash
+./scripts/server-stop.sh
+```
 
 ---
 
@@ -173,18 +195,22 @@ uv run alembic upgrade head
 5. Start the API
 
 ```bash
-cd apps/api
-uv run uvicorn app.main:app --reload --port 8000
+./scripts/run-api.sh
 ```
 
 6. Start the web app
 
 ```bash
-cd apps/web
-pnpm dev
+./scripts/run-web.sh
 ```
 
-7. Run the smoke test
+7. Start the worker
+
+```bash
+./scripts/run-worker.sh
+```
+
+8. Run the smoke test
 
 ```bash
 ./scripts/smoke-test.sh
@@ -213,3 +239,21 @@ Suggested test server goals:
 - run backend migrations
 - start API / Web
 - run `scripts/smoke-test.sh`
+
+For Ubuntu test servers, install baseline dependencies with:
+
+```bash
+./scripts/server-bootstrap-ubuntu.sh
+```
+
+For one-command startup on the test server:
+
+```bash
+./scripts/server-deploy.sh
+```
+
+To stop services:
+
+```bash
+./scripts/server-stop.sh
+```

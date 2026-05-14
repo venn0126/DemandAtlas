@@ -3,6 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [[ -f "${ROOT_DIR}/.env" ]]; then
+  set -a
+  source "${ROOT_DIR}/.env"
+  set +a
+fi
+
 echo "[dev-up] root: ${ROOT_DIR}"
 
 if ! command -v docker >/dev/null 2>&1; then
@@ -34,4 +40,3 @@ echo "[dev-up] next suggested steps:"
 echo "  1. cd apps/api && uv run alembic upgrade head"
 echo "  2. cd apps/api && uv run uvicorn app.main:app --reload --port 8000"
 echo "  3. cd apps/web && pnpm dev"
-

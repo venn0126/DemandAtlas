@@ -12,6 +12,7 @@ from app.api.v1.schemas.query_task import (
     QueryTaskCreateCacheHitResponse,
 )
 from app.common.response import build_error_response, build_success_response
+from app.integrations.worker_client import enqueue_query_task_pipeline
 from app.services.query_task_service import create_query_task_response
 
 router = APIRouter(tags=["QueryTasks"])
@@ -34,6 +35,9 @@ def create_query_task(
             message=result["error"]["message"],
             details=result["error"]["details"],
         )
+
+    if status_code == 202 and result["data"]:
+        enqueue_query_task_pipeline(result["data"]["query_task_id"])
 
     return build_success_response(
         data=result["data"],

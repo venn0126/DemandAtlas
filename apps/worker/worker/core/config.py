@@ -2,14 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Demand Atlas API"
-    app_env: str = "development"
-    app_debug: bool = True
-    api_host: str = "0.0.0.0"
-    api_port: int = 8000
-    log_level: str = "INFO"
+    worker_env: str = "development"
+    worker_log_level: str = "INFO"
     redis_url: str = "redis://127.0.0.1:6379/0"
-    database_url: str = "postgresql+psycopg://postgres:postgres@127.0.0.1:5432/demand_atlas"
 
     model_config = SettingsConfigDict(
         env_file=".env",
