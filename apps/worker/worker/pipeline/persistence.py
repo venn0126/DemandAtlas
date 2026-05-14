@@ -1,27 +1,68 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from uuid import uuid4
+from uuid import UUID, uuid4
 
-from sqlalchemy import MetaData, Table, column, select, table, update
+from sqlalchemy import DateTime, MetaData, Text, column, select, table, update
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 
 from worker.core.db import engine
 
 metadata = MetaData()
 
-query_tasks = Table("query_tasks", metadata)
-query_task_run_logs = Table("query_task_run_logs", metadata)
-result_snapshots = Table("result_snapshots", metadata)
+query_tasks_table = table(
+    "query_tasks",
+    column("id", PGUUID(as_uuid=True)),
+    column("status", Text),
+    column("started_at", DateTime(timezone=True)),
+    column("updated_at", DateTime(timezone=True)),
+    column("finished_at", DateTime(timezone=True)),
+    column("failure_reason", Text),
+    column("result_snapshot_id", PGUUID(as_uuid=True)),
+    column("input_payload", JSONB),
+)
+
+query_task_run_logs_table = table(
+    "query_task_run_logs",
+    column("id", PGUUID(as_uuid=True)),
+    column("query_task_id", PGUUID(as_uuid=True)),
+    column("stage", Text),
+    column("status", Text),
+    column("message", Text),
+    column("meta", JSONB),
+    column("started_at", DateTime(timezone=True)),
+    column("finished_at", DateTime(timezone=True)),
+    column("created_at", DateTime(timezone=True)),
+)
+
+result_snapshots_table = table(
+    "result_snapshots",
+    column("id", PGUUID(as_uuid=True)),
+    column("query_task_id", PGUUID(as_uuid=True)),
+    column("query_input_snapshot", JSONB),
+    column("template_snapshot", JSONB),
+    column("summary_stats", JSONB),
+    column("coverage_note", Text),
+    column("sync_freshness_note", Text),
+    column("pipeline_version", Text),
+    column("generated_at", DateTime(timezone=True)),
+    column("created_at", DateTime(timezone=True)),
+    column("updated_at", DateTime(timezone=True)),
+)
 
 
 def utc_now() -> datetime:
     return datetime.now(UTC)
 
 
+def to_uuid(value: str) -> UUID:
+    return UUID(value)
+
+
 def mark_query_task_running(query_task_id: str) -> None:
     stmt = (
-        update(table("query_tasks", column("id"), column("status"), column("started_at"), column("updated_at")))
-        .where(column("id") == query_task_id)
+        update(query_tasks_table)
+        .where(query_tasks_table.c.id == to_uuid(query_task_id))
         .values(
             status="running",
             started_at=utc_now(),
@@ -33,9 +74,9 @@ def mark_query_task_running(query_task_id: str) -> None:
 
 
 def fetch_query_task_input(query_task_id: str) -> dict:
-    stmt = select(column("input_payload")).select_from(
-        table("query_tasks", column("id"), column("input_payload"))
-    ).where(column("id") == query_task_id)
+    stmt = select(query_tasks_table.c.input_payload).where(
+        query_tasks_table.c.id == to_uuid(query_task_id)
+    )
     with engine.begin() as connection:
         row = connection.execute(stmt).one()
     return row[0] or {}
@@ -52,22 +93,9 @@ def append_stage_log(
     current_step: int,
     total_steps: int,
 ) -> None:
-    log_table = table(
-        "query_task_run_logs",
-        column("id"),
-        column("query_task_id"),
-        column("stage"),
-        column("status"),
-        column("message"),
-        column("meta"),
-        column("started_at"),
-        column("finished_at"),
-        column("created_at"),
-    )
-
-    stmt = log_table.insert().values(
+    stmt = query_task_run_logs_table.insert().values(
         id=uuid4(),
-        query_task_id=query_task_id,
+        query_task_id=to_uuid(query_task_id),
         stage=stage,
         status=status,
         message=message,
@@ -89,38 +117,14 @@ def create_result_snapshot_and_mark_success(
     query_input_snapshot: dict,
     pipeline_version: str,
 ) -> str:
-    result_snapshot_id = str(uuid4())
-
-    snapshot_table = table(
-        "result_snapshots",
-        column("id"),
-        column("query_task_id"),
-        column("query_input_snapshot"),
-        column("template_snapshot"),
-        column("summary_stats"),
-        column("coverage_note"),
-        column("sync_freshness_note"),
-        column("pipeline_version"),
-        column("generated_at"),
-        column("created_at"),
-        column("updated_at"),
-    )
+    result_snapshot_uuid = uuid4()
 
     update_query_task = (
-        update(
-            table(
-                "query_tasks",
-                column("id"),
-                column("status"),
-                column("result_snapshot_id"),
-                column("finished_at"),
-                column("updated_at"),
-            )
-        )
-        .where(column("id") == query_task_id)
+        update(query_tasks_table)
+        .where(query_tasks_table.c.id == to_uuid(query_task_id))
         .values(
             status="success",
-            result_snapshot_id=result_snapshot_id,
+            result_snapshot_id=result_snapshot_uuid,
             finished_at=utc_now(),
             updated_at=utc_now(),
         )
@@ -128,9 +132,9 @@ def create_result_snapshot_and_mark_success(
 
     with engine.begin() as connection:
         connection.execute(
-            snapshot_table.insert().values(
-                id=result_snapshot_id,
-                query_task_id=query_task_id,
+            result_snapshots_table.insert().values(
+                id=result_snapshot_uuid,
+                query_task_id=to_uuid(query_task_id),
                 query_input_snapshot=query_input_snapshot,
                 template_snapshot=None,
                 summary_stats={
@@ -148,22 +152,13 @@ def create_result_snapshot_and_mark_success(
         )
         connection.execute(update_query_task)
 
-    return result_snapshot_id
+    return str(result_snapshot_uuid)
 
 
 def mark_query_task_failed(query_task_id: str, failure_reason: str) -> None:
     stmt = (
-        update(
-            table(
-                "query_tasks",
-                column("id"),
-                column("status"),
-                column("failure_reason"),
-                column("finished_at"),
-                column("updated_at"),
-            )
-        )
-        .where(column("id") == query_task_id)
+        update(query_tasks_table)
+        .where(query_tasks_table.c.id == to_uuid(query_task_id))
         .values(
             status="failed",
             failure_reason=failure_reason,
