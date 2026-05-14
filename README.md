@@ -31,6 +31,80 @@ Demand Atlas｜需见 是一个面向 Reddit 内容发现与需求研究的服�
 - `doc/`：项目文档
 - `frontend/`：前端相关代码与 mock 资产
 - `openapi/`：接口定义与相关规范
+- `apps/web/`：前端应用
+- `apps/api/`：后端 API 应用
+- `scripts/`：本地开发辅助脚本
+
+### 本地开发
+
+1. 初始化依赖
+
+```bash
+./scripts/bootstrap.sh
+```
+
+2. 复制环境变量模板
+
+```bash
+cp .env.example .env
+```
+
+3. 启动本地依赖服务
+
+```bash
+./scripts/dev-up.sh
+```
+
+4. 执行数据库 migration
+
+```bash
+cd apps/api
+uv run alembic upgrade head
+```
+
+5. 启动后端 API
+
+```bash
+cd apps/api
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+6. 启动前端
+
+```bash
+cd apps/web
+pnpm dev
+```
+
+7. 执行 smoke test
+
+```bash
+./scripts/smoke-test.sh
+```
+
+### 测试机准备说明
+
+后续若使用海外测试机，建议至少提前准备：
+
+- Docker / Docker daemon
+- Git
+- `uv`
+- `pnpm`
+- 可访问的 `5432 / 6379 / 9000 / 9001 / 8000 / 4173` 端口策略
+- 独立 `.env`
+
+建议测试机路径约定：
+
+```text
+/srv/demand-atlas
+```
+
+建议测试机目标：
+
+- 能拉起本地依赖服务
+- 能执行后端 migration
+- 能启动 API / Web
+- 能跑 `scripts/smoke-test.sh`
 
 ---
 
@@ -65,3 +139,77 @@ Users can explore these signals through one-click discovery or targeted queries.
 - `doc/`: project documentation
 - `frontend/`: frontend-related code and mock assets
 - `openapi/`: API definitions and related specifications
+- `apps/web/`: web application
+- `apps/api/`: backend API service
+- `scripts/`: local development helper scripts
+
+### Local Development
+
+1. Bootstrap dependencies
+
+```bash
+./scripts/bootstrap.sh
+```
+
+2. Copy the environment template
+
+```bash
+cp .env.example .env
+```
+
+3. Start local dependency services
+
+```bash
+./scripts/dev-up.sh
+```
+
+4. Run database migrations
+
+```bash
+cd apps/api
+uv run alembic upgrade head
+```
+
+5. Start the API
+
+```bash
+cd apps/api
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+6. Start the web app
+
+```bash
+cd apps/web
+pnpm dev
+```
+
+7. Run the smoke test
+
+```bash
+./scripts/smoke-test.sh
+```
+
+### Test Server Preparation
+
+If you plan to use an overseas machine for testing later, prepare at least:
+
+- Docker / running Docker daemon
+- Git
+- `uv`
+- `pnpm`
+- reachable port policy for `5432 / 6379 / 9000 / 9001 / 8000 / 4173`
+- a dedicated `.env`
+
+Suggested application path:
+
+```text
+/srv/demand-atlas
+```
+
+Suggested test server goals:
+
+- bring up local dependency services
+- run backend migrations
+- start API / Web
+- run `scripts/smoke-test.sh`

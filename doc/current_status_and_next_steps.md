@@ -53,6 +53,12 @@
 - 前端组件拆解
 - 页面线框说明
 - mock 数据资产
+- `apps/web` 前端工程骨架与 mock 主链路已落地
+- 前端已完成结构化重构：
+  - i18n 基础设施
+  - layout / common / business 组件分层
+  - types / adapters / hooks 分层
+  - query / task / result / detail 页面容器化
 
 ## 3.4 API 与工程契约
 
@@ -81,6 +87,8 @@
 
 - Monorepo 结构与启动方案
 - 开发与部署工作流（已明确不采用“推文件到服务器目录”的主流程）
+- `apps/api` FastAPI 基础骨架已落地
+- 后端健康检查已可本地启动验证
 
 ---
 
@@ -175,6 +183,15 @@
 2. `.env.example`
 3. 根目录 `README.md`
 
+### 当前补充说明
+
+- 根目录 `README.md` 已创建
+- 当前最高优先级已切换为：
+  1. `docker-compose.yml`
+  2. `.env.example`
+  3. `apps/api` 数据库 migration 与基础接口
+  4. `apps/worker`
+
 ## 6.2 辅助脚本
 
 建议随后补：
@@ -182,6 +199,20 @@
 4. `scripts/dev-up.sh`
 5. `scripts/dev-down.sh`
 6. `scripts/smoke-test.sh`
+
+### 当前补充说明
+
+- 已创建：
+  - `scripts/bootstrap.sh`
+  - `scripts/dev-up.sh`
+  - `scripts/dev-down.sh`
+  - `scripts/smoke-test.sh`
+- 当前脚本已完成静态校验：
+  - `bash -n` 通过
+- `scripts/bootstrap.sh` 已完成实际执行验证
+- 当前脚本运行依赖：
+  - Docker daemon 可用
+  - 本地 API / Web 已启动（针对 `smoke-test.sh`）
 
 ## 6.3 仓库骨架
 
@@ -254,6 +285,13 @@
 执行：
 
 - `doc/sprint_01_backlog.md`
+
+### 当前实际推进建议
+
+前端 mock 主链路已完成并已提交，下一步建议直接进入：
+
+- `doc/backend_sprint_01_execution_checklist.md`
+- 从 **BE-02 数据库基础 migration** 开始
 
 ---
 
@@ -362,4 +400,3 @@
 如果下次只看一句话，请看这句：
 
 > **项目的方案设计已经足够完整，下一步不要再扩抽象文档，而应直接从 `docker-compose.yml`、`.env.example`、`README.md` 开始进入工程启动。**
-
