@@ -640,7 +640,9 @@
     ]
   },
   "meta": {
-    "next_page_token": "board_hot_pg_2_demo"
+    "next_page_token": "board_hot_pg_2_demo",
+    "response_source": "database",
+    "warning_count": 0
   },
   "error": null
 }
@@ -688,7 +690,9 @@
     ]
   },
   "meta": {
-    "next_page_token": null
+    "next_page_token": null,
+    "response_source": "database",
+    "warning_count": 0
   },
   "error": null
 }
@@ -736,7 +740,9 @@
     ]
   },
   "meta": {
-    "next_page_token": null
+    "next_page_token": null,
+    "response_source": "database",
+    "warning_count": 0
   },
   "error": null
 }
@@ -754,7 +760,9 @@
     "items": []
   },
   "meta": {
-    "next_page_token": null
+    "next_page_token": null,
+    "response_source": "database",
+    "warning_count": 0
   },
   "error": null
 }
@@ -836,7 +844,9 @@
     "coverage_note": "full coverage on candidate sources"
   },
   "meta": {
-    "evidence_next_page_token": null
+    "evidence_next_page_token": null,
+    "response_source": "database",
+    "warning_count": 0
   },
   "error": null
 }
@@ -905,7 +915,9 @@
     "coverage_note": "1 evidence item was removed after source sync"
   },
   "meta": {
-    "evidence_next_page_token": null
+    "evidence_next_page_token": null,
+    "response_source": "database",
+    "warning_count": 1
   },
   "error": null
 }

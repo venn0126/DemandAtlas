@@ -659,6 +659,42 @@ components:
             - integer
             - "null"
 
+    BoardListMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        next_page_token:
+          type:
+            - string
+            - "null"
+        response_source:
+          type:
+            - string
+            - "null"
+          enum: [database, demo_static, null]
+        warning_count:
+          type:
+            - integer
+            - "null"
+
+    ClusterDetailMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        evidence_next_page_token:
+          type:
+            - string
+            - "null"
+        response_source:
+          type:
+            - string
+            - "null"
+          enum: [database, demo_static, null]
+        warning_count:
+          type:
+            - integer
+            - "null"
+
     ApiError:
       type: object
       additionalProperties: false
@@ -1264,7 +1300,7 @@ components:
               items:
                 $ref: "#/components/schemas/BoardEntry"
         meta:
-          $ref: "#/components/schemas/ApiMeta"
+          $ref: "#/components/schemas/BoardListMeta"
         error:
           type: "null"
 
@@ -1278,13 +1314,7 @@ components:
         data:
           $ref: "#/components/schemas/DemandClusterDetail"
         meta:
-          type: object
-          additionalProperties: false
-          properties:
-            evidence_next_page_token:
-              type:
-                - string
-                - "null"
+          $ref: "#/components/schemas/ClusterDetailMeta"
         error:
           type: "null"
 

@@ -27,4 +27,7 @@ bash "${ROOT_DIR}/scripts/verify-query-task-meta.sh"
 echo "[verify-api-contract] step 3/3: result snapshot metadata"
 bash "${ROOT_DIR}/scripts/verify-result-snapshot-meta.sh"
 
+echo "[verify-api-contract] step 4/4: result snapshot explore"
+bash "${ROOT_DIR}/scripts/verify-result-snapshot-explore.sh"
+
 echo "[verify-api-contract] all checks passed"
