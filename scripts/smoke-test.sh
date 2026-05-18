@@ -47,6 +47,33 @@ else:
 ' "${field_path}"
 }
 
+poll_query_task_until_terminal() {
+  local query_task_id="$1"
+  local response=""
+  local status=""
+
+  for ((attempt = 1; attempt <= POLL_RETRY_COUNT; attempt++)); do
+    response="$(
+      curl \
+        --fail \
+        --silent \
+        --show-error \
+        "${API_BASE_URL}/api/v1/query-tasks/${query_task_id}"
+    )"
+    status="$(printf '%s' "${response}" | extract_json_field "data.status")"
+
+    if [[ "${status}" == "success" || "${status}" == "partial_success" || "${status}" == "failed" ]]; then
+      printf '%s' "${response}"
+      return 0
+    fi
+
+    sleep "${POLL_INTERVAL_SECONDS}"
+  done
+
+  printf '%s' "${response}"
+  return 1
+}
+
 echo "[smoke-test] root: ${ROOT_DIR}"
 echo "[smoke-test] api: ${API_BASE_URL}"
 echo "[smoke-test] web: ${WEB_BASE_URL}"
@@ -69,6 +96,20 @@ ONE_CLICK_WARMUP_RESPONSE="$(
     -d '{"query_type":"one_click","template_id":"tpl_ai_tools","time_window":{"preset":"30d"}}' \
     "${API_BASE_URL}/api/v1/query-tasks"
 )"
+
+ONE_CLICK_WARMUP_MODE="$(printf '%s' "${ONE_CLICK_WARMUP_RESPONSE}" | extract_json_field "data.execution_mode")"
+if [[ "${ONE_CLICK_WARMUP_MODE}" == "async" ]]; then
+  ONE_CLICK_WARMUP_TASK_ID="$(printf '%s' "${ONE_CLICK_WARMUP_RESPONSE}" | extract_json_field "data.query_task_id")"
+  echo "[smoke-test] waiting one_click warmup task: ${ONE_CLICK_WARMUP_TASK_ID}"
+  ONE_CLICK_WARMUP_STATUS_RESPONSE="$(poll_query_task_until_terminal "${ONE_CLICK_WARMUP_TASK_ID}")"
+  ONE_CLICK_WARMUP_STATUS="$(printf '%s' "${ONE_CLICK_WARMUP_STATUS_RESPONSE}" | extract_json_field "data.status")"
+  if [[ "${ONE_CLICK_WARMUP_STATUS}" != "success" && "${ONE_CLICK_WARMUP_STATUS}" != "partial_success" ]]; then
+    echo "[smoke-test] error: one_click warmup task did not complete successfully"
+    echo "${ONE_CLICK_WARMUP_RESPONSE}"
+    echo "${ONE_CLICK_WARMUP_STATUS_RESPONSE}"
+    exit 1
+  fi
+fi
 
 echo "[smoke-test] checking query task create (one_click cache hit)"
 ONE_CLICK_CACHE_RESPONSE="$(
@@ -149,30 +190,11 @@ else
   TASK_RESPONSE=""
   TASK_STATUS=""
   RESULT_SNAPSHOT_ID=""
-
-  for ((attempt = 1; attempt <= POLL_RETRY_COUNT; attempt++)); do
-    TASK_RESPONSE="$(
-      curl \
-        --fail \
-        --silent \
-        --show-error \
-        "${API_BASE_URL}/api/v1/query-tasks/${QUERY_TASK_ID}"
-    )"
-    TASK_STATUS="$(printf '%s' "${TASK_RESPONSE}" | extract_json_field "data.status")"
-
-    if [[ "${TASK_STATUS}" == "success" || "${TASK_STATUS}" == "partial_success" ]]; then
-      RESULT_SNAPSHOT_ID="$(printf '%s' "${TASK_RESPONSE}" | extract_json_field "data.result_snapshot_id")"
-      break
-    fi
-
-    if [[ "${TASK_STATUS}" == "failed" ]]; then
-      echo "[smoke-test] error: query task failed"
-      echo "${TASK_RESPONSE}"
-      exit 1
-    fi
-
-    sleep "${POLL_INTERVAL_SECONDS}"
-  done
+  TASK_RESPONSE="$(poll_query_task_until_terminal "${QUERY_TASK_ID}")"
+  TASK_STATUS="$(printf '%s' "${TASK_RESPONSE}" | extract_json_field "data.status")"
+  if [[ "${TASK_STATUS}" == "success" || "${TASK_STATUS}" == "partial_success" ]]; then
+    RESULT_SNAPSHOT_ID="$(printf '%s' "${TASK_RESPONSE}" | extract_json_field "data.result_snapshot_id")"
+  fi
 
   if [[ -z "${RESULT_SNAPSHOT_ID}" ]]; then
     echo "[smoke-test] error: query task did not finish within polling window"
