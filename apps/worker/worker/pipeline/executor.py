@@ -40,6 +40,40 @@ def _build_summary_stats(query_input: dict[str, Any]) -> dict[str, int]:
     }
 
 
+def _build_pipeline_metadata(
+    query_input: dict[str, Any],
+    *,
+    outcome_status: str,
+    summary_stats: dict[str, int],
+) -> dict[str, Any]:
+    query_type = query_input.get("query_type", "directed")
+    keywords = _normalized_string_list(query_input.get("keywords"))
+    subreddits = _normalized_string_list(query_input.get("subreddits"))
+    source_scope = subreddits or keywords
+
+    return {
+        "query_type": query_type,
+        "execution_mode": "placeholder_worker_pipeline",
+        "source_scope": {
+            "keywords": keywords,
+            "subreddits": subreddits,
+            "source_count": len(source_scope),
+        },
+        "coverage": {
+            "status": outcome_status,
+            "requested_source_count": len(source_scope),
+            "completed_source_count": max(len(source_scope) - 1, 0)
+            if outcome_status == "partial_success"
+            else len(source_scope),
+        },
+        "result_profile": {
+            "cluster_count": summary_stats["cluster_count"],
+            "post_count": summary_stats["post_count"],
+            "comment_count": summary_stats["comment_count"],
+        },
+    }
+
+
 def _build_coverage_note(query_input: dict[str, Any], outcome_status: str) -> str | None:
     query_type = query_input.get("query_type", "directed")
     subreddit_count = len(_normalized_string_list(query_input.get("subreddits")))
@@ -122,6 +156,29 @@ def _determine_pipeline_outcome(query_input: dict[str, Any]) -> tuple[str, str |
     return "success", None
 
 
+def _build_snapshot_warning_items(
+    *,
+    outcome_status: str,
+    coverage_note: str | None,
+    failure_reason: str | None,
+) -> list[dict[str, str]]:
+    if outcome_status == "success":
+        return []
+    if outcome_status == "partial_success":
+        return [
+            {
+                "code": "PARTIAL_COVERAGE",
+                "message": coverage_note or "pipeline completed with partial coverage",
+            }
+        ]
+    return [
+        {
+            "code": "PIPELINE_FAILED",
+            "message": failure_reason or "pipeline execution failed",
+        }
+    ]
+
+
 def build_pipeline_plan(query_task_id: str) -> dict[str, Any]:
     return {
         "query_task_id": query_task_id,
@@ -138,6 +195,16 @@ def run_pipeline(query_task_id: str, query_input: dict[str, Any]) -> dict[str, A
     coverage_note = _build_coverage_note(query_input, outcome_status)
     sync_freshness_note = _build_sync_freshness_note()
     available_boards = _build_available_boards(summary_stats)
+    pipeline_metadata = _build_pipeline_metadata(
+        query_input,
+        outcome_status=outcome_status,
+        summary_stats=summary_stats,
+    )
+    warning_items = _build_snapshot_warning_items(
+        outcome_status=outcome_status,
+        coverage_note=coverage_note,
+        failure_reason=failure_reason,
+    )
 
     for index, stage in enumerate(PIPELINE_STAGES, start=1):
         stage_status = "success"
@@ -150,6 +217,7 @@ def run_pipeline(query_task_id: str, query_input: dict[str, Any]) -> dict[str, A
         stage_meta: dict[str, Any] = {
             "query_type": query_input.get("query_type", "directed"),
             "summary_stats": summary_stats if stage == "snapshot" else None,
+            "pipeline_metadata": pipeline_metadata if stage == "snapshot" else None,
         }
 
         if outcome_status == "failed" and stage == "validate":
@@ -193,6 +261,8 @@ def run_pipeline(query_task_id: str, query_input: dict[str, Any]) -> dict[str, A
                 "coverage_note": coverage_note,
                 "available_boards": available_boards,
                 "failure_reason": failure_reason,
+                "pipeline_metadata": pipeline_metadata,
+                "warnings": warning_items,
             },
         }
     )
@@ -215,15 +285,7 @@ def run_pipeline(query_task_id: str, query_input: dict[str, Any]) -> dict[str, A
         "sync_freshness_note": sync_freshness_note,
         "summary_stats": summary_stats,
         "available_boards": available_boards,
-        "warnings": (
-            []
-            if outcome_status == "success"
-            else [
-                {
-                    "code": "PARTIAL_COVERAGE" if outcome_status == "partial_success" else "PIPELINE_FAILED",
-                    "message": coverage_note or failure_reason or "pipeline completed with warnings",
-                }
-            ]
-        ),
+        "warnings": warning_items,
+        "pipeline_metadata": pipeline_metadata,
         "failure_reason": failure_reason,
     }

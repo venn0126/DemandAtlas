@@ -146,6 +146,10 @@
     - 直接调用 route 函数返回结构正确
     - `app.routes` 中已包含 `/api/v1/query-tasks`
     - `uv run python -m compileall app` 通过
+  - 已完成测试机验证：
+    - OneClick 二次 `cache_hit` 通过
+    - Directed 二次 `cache_hit` 通过
+    - OneClick / Directed `force_refresh=true` 绕过缓存通过
 
 ### BE-05
 

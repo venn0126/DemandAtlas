@@ -247,6 +247,8 @@ cd /srv/demand-atlas
 9. Directed `force_refresh=true` 返回真实 `async`
 10. Web 根页面
 
+截至 2026-05-18，以上检查项已在测试机完成通过验证。
+
 ---
 
 ## 9. 手工检查建议

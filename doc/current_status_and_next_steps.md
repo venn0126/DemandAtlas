@@ -108,6 +108,17 @@
   - `force_refresh_bypass_cache_lookup`
   - `force_refresh_bypass_inflight_reuse`
   - `force_refresh_query_type`
+- 上述 QueryTask 创建缓存 / 复用 / force_refresh 行为已于 2026-05-18 在测试机通过 smoke test 复验
+- Worker 已开始把结构化 pipeline 元信息写入 `result_snapshots.template_snapshot`
+- ResultSnapshot 摘要读取已开始消费真实 `pipeline_metadata` / `warning_count`
+- QueryTask 状态读取已开始合并 snapshot 侧结构化 `warnings` / `pipeline_metadata`
+- QueryTask 状态响应 `meta` 已开始补充：
+  - `warning_count`
+  - `coverage_status`
+  - `requested_source_count`
+  - `completed_source_count`
+  - `source_scope_count`
+  - `result_cluster_count`
 
 ## 3.5 项目交付推进
 

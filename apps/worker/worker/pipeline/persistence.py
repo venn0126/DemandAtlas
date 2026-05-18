@@ -121,6 +121,7 @@ def create_result_snapshot_and_mark_completion(
     summary_stats: dict,
     coverage_note: str | None,
     sync_freshness_note: str | None,
+    template_snapshot: dict | None,
     pipeline_version: str,
 ) -> str:
     result_snapshot_uuid = uuid4()
@@ -142,7 +143,7 @@ def create_result_snapshot_and_mark_completion(
                 id=result_snapshot_uuid,
                 query_task_id=to_uuid(query_task_id),
                 query_input_snapshot=query_input_snapshot,
-                template_snapshot=None,
+                template_snapshot=template_snapshot,
                 summary_stats=summary_stats,
                 coverage_note=coverage_note,
                 sync_freshness_note=sync_freshness_note,

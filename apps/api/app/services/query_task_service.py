@@ -106,6 +106,19 @@ def _build_warning_items(
     return unique_warnings
 
 
+def _merge_warning_items(*warning_groups: list[dict[str, str]]) -> list[dict[str, str]]:
+    merged: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for group in warning_groups:
+        for item in group:
+            key = (item["code"], item["message"])
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(item)
+    return merged
+
+
 def _build_cache_metadata(*, cache_source: str, freshness_seconds: int | None = None, cache_hit_query_task_id: str | None = None, cache_hit_result_snapshot_id: str | None = None, cache_hit_status: str | None = None) -> dict[str, Any]:
     meta: dict[str, Any] = {
         "response_source": "database",
@@ -558,12 +571,22 @@ def get_query_task_status_from_db(db: Session, query_task_id: str) -> dict[str, 
         snapshot is not None,
     )
     coverage_note = snapshot.coverage_note if snapshot else None
-    warnings = _build_warning_items(
-        status=query_task.status,
-        failure_reason=query_task.failure_reason,
-        coverage_note=coverage_note,
-        run_logs=run_logs,
+    template_snapshot = (snapshot.template_snapshot or {}) if snapshot else {}
+    pipeline_metadata = template_snapshot.get("pipeline_metadata") or {}
+    snapshot_warning_items = template_snapshot.get("warnings") or []
+    warnings = _merge_warning_items(
+        _build_warning_items(
+            status=query_task.status,
+            failure_reason=query_task.failure_reason,
+            coverage_note=coverage_note,
+            run_logs=run_logs,
+        ),
+        snapshot_warning_items,
     )
+
+    coverage_meta = pipeline_metadata.get("coverage") or {}
+    source_scope_meta = pipeline_metadata.get("source_scope") or {}
+    result_profile_meta = pipeline_metadata.get("result_profile") or {}
 
     return {
         "data": {
@@ -581,6 +604,13 @@ def get_query_task_status_from_db(db: Session, query_task_id: str) -> dict[str, 
         },
         "meta": {
             "response_source": "database",
+            "pipeline_metadata": pipeline_metadata,
+            "warning_count": len(warnings),
+            "coverage_status": coverage_meta.get("status"),
+            "requested_source_count": coverage_meta.get("requested_source_count"),
+            "completed_source_count": coverage_meta.get("completed_source_count"),
+            "source_scope_count": source_scope_meta.get("source_count"),
+            "result_cluster_count": result_profile_meta.get("cluster_count"),
         },
         "error": (
             {

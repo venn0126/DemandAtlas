@@ -149,7 +149,10 @@ POST /api/v1/query-tasks
     - OneClick 二次 `cache_hit`
     - Directed 二次 `cache_hit`
     - OneClick / Directed `force_refresh=true` 绕过缓存验证
-- 上述更新当前仅完成本地静态校验，尚未写入本记录的测试机复验结论
+- 2026-05-18 已在测试机完成复验：
+  - `./scripts/smoke-test.sh` 已通过
+  - OneClick warmup / 二次 `cache_hit` / `force_refresh=true` 绕过缓存 已验证
+  - Directed async 创建 / 真实快照生成 / 二次 `cache_hit` / `force_refresh=true` 绕过缓存 已验证
 
 ---
 

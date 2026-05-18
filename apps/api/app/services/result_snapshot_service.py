@@ -111,6 +111,9 @@ def get_result_snapshot_summary_from_db(
     query_task = snapshot.query_task
     query_input = snapshot.query_input_snapshot or {}
     summary_stats = snapshot.summary_stats or {}
+    template_snapshot = snapshot.template_snapshot or {}
+    pipeline_metadata = template_snapshot.get("pipeline_metadata") or {}
+    warning_items = template_snapshot.get("warnings") or []
     cluster_count = summary_stats.get("cluster_count", 0)
 
     if cluster_count == 0:
@@ -152,6 +155,8 @@ def get_result_snapshot_summary_from_db(
         },
         "meta": {
             "response_source": "database",
+            "pipeline_metadata": pipeline_metadata,
+            "warning_count": len(warning_items),
         },
         "error": None,
     }

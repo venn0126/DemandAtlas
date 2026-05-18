@@ -43,6 +43,11 @@ def execute_query_task_pipeline(query_task_id: str) -> dict[str, Any]:
                 summary_stats=result["summary_stats"],
                 coverage_note=result["coverage_note"],
                 sync_freshness_note=result["sync_freshness_note"],
+                template_snapshot={
+                    "pipeline_metadata": result["pipeline_metadata"],
+                    "available_boards": result["available_boards"],
+                    "warnings": result["warnings"],
+                },
                 pipeline_version=PIPELINE_VERSION,
             )
             result["result_snapshot_id"] = result_snapshot_id
