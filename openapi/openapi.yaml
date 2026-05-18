@@ -137,7 +137,13 @@ paths:
                       status: success
                       result_snapshot_id: rs_01JVA1JD7YQCKRZVMD0W2X5P4M
                       cached: true
-                    meta: {}
+                    meta:
+                      response_source: database
+                      cache_source: query_task_result_snapshot
+                      cache_hit_query_task_id: 11111111-1111-1111-1111-111111111111
+                      cache_hit_result_snapshot_id: 22222222-2222-2222-2222-222222222222
+                      cache_hit_status: success
+                      cache_freshness_seconds: 42
                     error: null
         "202":
           description: Async query task accepted
@@ -156,6 +162,8 @@ paths:
                       poll_url: /api/v1/query-tasks/qt_01JVA1M1WEX6NQ0QJQYY23H5Q8
                       anonymous_query_access_token: anon_tok_demo
                     meta:
+                      response_source: database
+                      cache_source: cache_miss
                       retry_after_ms: 1500
                     error: null
         "400":
@@ -462,6 +470,191 @@ components:
             - string
             - "null"
         retry_after_ms:
+          type:
+            - integer
+            - "null"
+
+    PipelineSourceScope:
+      type: object
+      additionalProperties: false
+      properties:
+        keywords:
+          type: array
+          items:
+            type: string
+        subreddits:
+          type: array
+          items:
+            type: string
+        source_count:
+          type:
+            - integer
+            - "null"
+
+    PipelineCoverage:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type:
+            - string
+            - "null"
+          enum: [success, partial_success, failed, null]
+        requested_source_count:
+          type:
+            - integer
+            - "null"
+        completed_source_count:
+          type:
+            - integer
+            - "null"
+
+    PipelineResultProfile:
+      type: object
+      additionalProperties: false
+      properties:
+        cluster_count:
+          type:
+            - integer
+            - "null"
+        post_count:
+          type:
+            - integer
+            - "null"
+        comment_count:
+          type:
+            - integer
+            - "null"
+
+    SnapshotPipelineMetadata:
+      type: object
+      additionalProperties: false
+      properties:
+        query_type:
+          oneOf:
+            - $ref: "#/components/schemas/QueryType"
+            - type: "null"
+        execution_mode:
+          type:
+            - string
+            - "null"
+        source_scope:
+          oneOf:
+            - $ref: "#/components/schemas/PipelineSourceScope"
+            - type: "null"
+        coverage:
+          oneOf:
+            - $ref: "#/components/schemas/PipelineCoverage"
+            - type: "null"
+        result_profile:
+          oneOf:
+            - $ref: "#/components/schemas/PipelineResultProfile"
+            - type: "null"
+
+    QueryTaskCreateMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        response_source:
+          type:
+            - string
+            - "null"
+          enum: [database, demo_static, null]
+        cache_source:
+          type:
+            - string
+            - "null"
+        cache_freshness_seconds:
+          type:
+            - integer
+            - "null"
+        cache_hit_query_task_id:
+          type:
+            - string
+            - "null"
+        cache_hit_result_snapshot_id:
+          type:
+            - string
+            - "null"
+        cache_hit_status:
+          type:
+            - string
+            - "null"
+          enum: [success, partial_success, null]
+        force_refresh_applied:
+          type:
+            - boolean
+            - "null"
+        force_refresh_bypass_cache_lookup:
+          type:
+            - boolean
+            - "null"
+        force_refresh_bypass_inflight_reuse:
+          type:
+            - boolean
+            - "null"
+        force_refresh_query_type:
+          oneOf:
+            - $ref: "#/components/schemas/QueryType"
+            - type: "null"
+        retry_after_ms:
+          type:
+            - integer
+            - "null"
+
+    QueryTaskStatusMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        response_source:
+          type:
+            - string
+            - "null"
+          enum: [database, demo_static, null]
+        pipeline_metadata:
+          oneOf:
+            - $ref: "#/components/schemas/SnapshotPipelineMetadata"
+            - type: "null"
+        warning_count:
+          type:
+            - integer
+            - "null"
+        coverage_status:
+          type:
+            - string
+            - "null"
+          enum: [success, partial_success, failed, null]
+        requested_source_count:
+          type:
+            - integer
+            - "null"
+        completed_source_count:
+          type:
+            - integer
+            - "null"
+        source_scope_count:
+          type:
+            - integer
+            - "null"
+        result_cluster_count:
+          type:
+            - integer
+            - "null"
+
+    ResultSnapshotSummaryMeta:
+      type: object
+      additionalProperties: false
+      properties:
+        response_source:
+          type:
+            - string
+            - "null"
+          enum: [database, demo_static, null]
+        pipeline_metadata:
+          oneOf:
+            - $ref: "#/components/schemas/SnapshotPipelineMetadata"
+            - type: "null"
+        warning_count:
           type:
             - integer
             - "null"
@@ -930,7 +1123,7 @@ components:
             cached:
               type: boolean
         meta:
-          $ref: "#/components/schemas/ApiMeta"
+          $ref: "#/components/schemas/QueryTaskCreateMeta"
         error:
           type: "null"
 
@@ -960,7 +1153,7 @@ components:
                 - string
                 - "null"
         meta:
-          $ref: "#/components/schemas/ApiMeta"
+          $ref: "#/components/schemas/QueryTaskCreateMeta"
         error:
           type: "null"
 
@@ -999,7 +1192,7 @@ components:
               items:
                 $ref: "#/components/schemas/WarningItem"
         meta:
-          $ref: "#/components/schemas/ApiMeta"
+          $ref: "#/components/schemas/QueryTaskStatusMeta"
         error:
           oneOf:
             - type: "null"
@@ -1015,7 +1208,7 @@ components:
         data:
           $ref: "#/components/schemas/ResultSnapshotSummary"
         meta:
-          $ref: "#/components/schemas/ApiMeta"
+          $ref: "#/components/schemas/ResultSnapshotSummaryMeta"
         error:
           type: "null"
 

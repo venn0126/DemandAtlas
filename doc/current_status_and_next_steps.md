@@ -135,6 +135,7 @@
 - 已新增测试脚本：
   - `scripts/verify-query-task-meta.sh`
   - `scripts/verify-result-snapshot-meta.sh`
+  - `scripts/verify-api-contract.sh`
 
 ## 3.5 项目交付推进
 

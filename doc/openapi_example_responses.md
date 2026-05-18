@@ -122,7 +122,14 @@
     "result_snapshot_id": "rs_01JVA1JD7YQCKRZVMD0W2X5P4M",
     "cached": true
   },
-  "meta": {},
+  "meta": {
+    "response_source": "database",
+    "cache_source": "query_task_result_snapshot",
+    "cache_hit_query_task_id": "11111111-1111-1111-1111-111111111111",
+    "cache_hit_result_snapshot_id": "22222222-2222-2222-2222-222222222222",
+    "cache_hit_status": "success",
+    "cache_freshness_seconds": 42
+  },
   "error": null
 }
 ```
@@ -142,6 +149,8 @@
     "anonymous_query_access_token": "anon_tok_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo"
   },
   "meta": {
+    "response_source": "database",
+    "cache_source": "cache_miss",
     "retry_after_ms": 1500
   },
   "error": null
@@ -211,7 +220,16 @@
     "coverage_note": null,
     "warnings": []
   },
-  "meta": {},
+  "meta": {
+    "response_source": "database",
+    "pipeline_metadata": null,
+    "warning_count": 0,
+    "coverage_status": null,
+    "requested_source_count": null,
+    "completed_source_count": null,
+    "source_scope_count": null,
+    "result_cluster_count": null
+  },
   "error": null
 }
 ```
@@ -261,12 +279,47 @@
     "coverage_note": "2 candidate subreddits failed during fetch; results were generated from available sources",
     "warnings": [
       {
-        "code": "PARTIAL_FETCH_FAILURE",
-        "message": "some subreddit data was unavailable"
+        "code": "PARTIAL_COVERAGE",
+        "message": "partial coverage: 1 requested subreddit unavailable during fetch"
+      },
+      {
+        "code": "PIPELINE_FETCH_PARTIAL_SUCCESS",
+        "message": "fetched placeholder source documents from 2/3 scopes"
+      },
+      {
+        "code": "PIPELINE_FINALIZE_PARTIAL_SUCCESS",
+        "message": "pipeline finalized in placeholder mode"
       }
     ]
   },
-  "meta": {},
+  "meta": {
+    "response_source": "database",
+    "pipeline_metadata": {
+      "query_type": "directed",
+      "execution_mode": "placeholder_worker_pipeline",
+      "source_scope": {
+        "keywords": ["meta-partial"],
+        "subreddits": ["a", "b", "c"],
+        "source_count": 3
+      },
+      "coverage": {
+        "status": "partial_success",
+        "requested_source_count": 3,
+        "completed_source_count": 2
+      },
+      "result_profile": {
+        "cluster_count": 6,
+        "post_count": 24,
+        "comment_count": 120
+      }
+    },
+    "warning_count": 3,
+    "coverage_status": "partial_success",
+    "requested_source_count": 3,
+    "completed_source_count": 2,
+    "source_scope_count": 3,
+    "result_cluster_count": 6
+  },
   "error": null
 }
 ```
@@ -291,7 +344,34 @@
     "coverage_note": "full coverage on candidate sources",
     "warnings": []
   },
-  "meta": {},
+  "meta": {
+    "response_source": "database",
+    "pipeline_metadata": {
+      "query_type": "directed",
+      "execution_mode": "placeholder_worker_pipeline",
+      "source_scope": {
+        "keywords": ["meta-check"],
+        "subreddits": [],
+        "source_count": 1
+      },
+      "coverage": {
+        "status": "success",
+        "requested_source_count": 1,
+        "completed_source_count": 1
+      },
+      "result_profile": {
+        "cluster_count": 4,
+        "post_count": 16,
+        "comment_count": 80
+      }
+    },
+    "warning_count": 0,
+    "coverage_status": "success",
+    "requested_source_count": 1,
+    "completed_source_count": 1,
+    "source_scope_count": 1,
+    "result_cluster_count": 4
+  },
   "error": null
 }
 ```
@@ -374,7 +454,29 @@
     },
     "available_boards": ["hot", "growth", "opportunity"]
   },
-  "meta": {},
+  "meta": {
+    "response_source": "database",
+    "pipeline_metadata": {
+      "query_type": "directed",
+      "execution_mode": "placeholder_worker_pipeline",
+      "source_scope": {
+        "keywords": ["snapshot-meta-success"],
+        "subreddits": [],
+        "source_count": 1
+      },
+      "coverage": {
+        "status": "success",
+        "requested_source_count": 1,
+        "completed_source_count": 1
+      },
+      "result_profile": {
+        "cluster_count": 4,
+        "post_count": 16,
+        "comment_count": 80
+      }
+    },
+    "warning_count": 0
+  },
   "error": null
 }
 ```
@@ -436,7 +538,29 @@
     },
     "available_boards": ["hot", "growth"]
   },
-  "meta": {},
+  "meta": {
+    "response_source": "database",
+    "pipeline_metadata": {
+      "query_type": "directed",
+      "execution_mode": "placeholder_worker_pipeline",
+      "source_scope": {
+        "keywords": ["snapshot-meta-partial"],
+        "subreddits": ["a", "b", "c"],
+        "source_count": 3
+      },
+      "coverage": {
+        "status": "partial_success",
+        "requested_source_count": 3,
+        "completed_source_count": 2
+      },
+      "result_profile": {
+        "cluster_count": 6,
+        "post_count": 24,
+        "comment_count": 120
+      }
+    },
+    "warning_count": 1
+  },
   "error": null
 }
 ```
