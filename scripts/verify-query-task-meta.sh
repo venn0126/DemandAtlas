@@ -55,7 +55,7 @@ poll_query_task_until_terminal() {
         "${API_BASE_URL}/api/v1/query-tasks/${query_task_id}"
     )"
     status="$(printf '%s' "${response}" | extract_json_field "data.status")"
-    echo "[verify-query-task-meta] poll[$attempt] ${query_task_id} -> ${status}"
+    echo "[verify-query-task-meta] poll[$attempt] ${query_task_id} -> ${status}" >&2
 
     if [[ "${status}" == "success" || "${status}" == "partial_success" || "${status}" == "failed" ]]; then
       printf '%s' "${response}"
