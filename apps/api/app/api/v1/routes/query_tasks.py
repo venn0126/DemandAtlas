@@ -51,7 +51,7 @@ def create_query_task(
     if status_code == 202 and result["data"]:
         query_task_id = result["data"]["query_task_id"]
         cache_source = result["meta"].get("cache_source")
-        if cache_source in {None, "cache_miss"}:
+        if cache_source in {None, "cache_miss", "force_refresh_bypass"}:
             if not enqueue_query_task_pipeline(query_task_id):
                 logger.warning("query task enqueue failed, marking task as failed", extra={"query_task_id": query_task_id})
                 mark_query_task_enqueue_failed(db, query_task_id)

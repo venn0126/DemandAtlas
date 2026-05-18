@@ -151,6 +151,19 @@ if [[ "${ONE_CLICK_FORCE_REFRESH_MODE}" != "async" || "${ONE_CLICK_FORCE_REFRESH
   exit 1
 fi
 
+ONE_CLICK_FORCE_REFRESH_TASK_ID="$(printf '%s' "${ONE_CLICK_FORCE_REFRESH_RESPONSE}" | extract_json_field "data.query_task_id")"
+if [[ -n "${ONE_CLICK_FORCE_REFRESH_TASK_ID}" ]]; then
+  echo "[smoke-test] waiting one_click force_refresh task: ${ONE_CLICK_FORCE_REFRESH_TASK_ID}"
+  ONE_CLICK_FORCE_REFRESH_STATUS_RESPONSE="$(poll_query_task_until_terminal "${ONE_CLICK_FORCE_REFRESH_TASK_ID}")"
+  ONE_CLICK_FORCE_REFRESH_STATUS="$(printf '%s' "${ONE_CLICK_FORCE_REFRESH_STATUS_RESPONSE}" | extract_json_field "data.status")"
+  if [[ "${ONE_CLICK_FORCE_REFRESH_STATUS}" != "success" && "${ONE_CLICK_FORCE_REFRESH_STATUS}" != "partial_success" ]]; then
+    echo "[smoke-test] error: one_click force_refresh task did not complete successfully"
+    echo "${ONE_CLICK_FORCE_REFRESH_RESPONSE}"
+    echo "${ONE_CLICK_FORCE_REFRESH_STATUS_RESPONSE}"
+    exit 1
+  fi
+fi
+
 if [[ "${SMOKE_TEST_MODE}" == "demo_static" ]]; then
   echo "[smoke-test] checking query task status"
   curl \
@@ -246,6 +259,19 @@ else
     echo "[smoke-test] error: directed force_refresh did not bypass cache as expected"
     echo "${DIRECTED_FORCE_REFRESH_RESPONSE}"
     exit 1
+  fi
+
+  DIRECTED_FORCE_REFRESH_TASK_ID="$(printf '%s' "${DIRECTED_FORCE_REFRESH_RESPONSE}" | extract_json_field "data.query_task_id")"
+  if [[ -n "${DIRECTED_FORCE_REFRESH_TASK_ID}" ]]; then
+    echo "[smoke-test] waiting directed force_refresh task: ${DIRECTED_FORCE_REFRESH_TASK_ID}"
+    DIRECTED_FORCE_REFRESH_STATUS_RESPONSE="$(poll_query_task_until_terminal "${DIRECTED_FORCE_REFRESH_TASK_ID}")"
+    DIRECTED_FORCE_REFRESH_STATUS="$(printf '%s' "${DIRECTED_FORCE_REFRESH_STATUS_RESPONSE}" | extract_json_field "data.status")"
+    if [[ "${DIRECTED_FORCE_REFRESH_STATUS}" != "success" && "${DIRECTED_FORCE_REFRESH_STATUS}" != "partial_success" ]]; then
+      echo "[smoke-test] error: directed force_refresh task did not complete successfully"
+      echo "${DIRECTED_FORCE_REFRESH_RESPONSE}"
+      echo "${DIRECTED_FORCE_REFRESH_STATUS_RESPONSE}"
+      exit 1
+    fi
   fi
 fi
 
