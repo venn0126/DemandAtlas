@@ -81,8 +81,18 @@ RESULT_SNAPSHOT_SUMMARY_MAP: dict[str, dict[str, Any]] = {
 }
 
 
-def get_result_snapshot_summary(result_snapshot_id: str) -> dict[str, Any] | None:
-    return RESULT_SNAPSHOT_SUMMARY_MAP.get(result_snapshot_id)
+def get_demo_result_snapshot_summary(result_snapshot_id: str) -> dict[str, Any] | None:
+    payload = RESULT_SNAPSHOT_SUMMARY_MAP.get(result_snapshot_id)
+    if payload is None:
+        return None
+
+    return {
+        **payload,
+        "meta": {
+            **payload["meta"],
+            "response_source": "demo_static",
+        },
+    }
 
 
 def get_result_snapshot_summary_from_db(
@@ -98,25 +108,50 @@ def get_result_snapshot_summary_from_db(
     if snapshot is None:
         return None
 
+    query_task = snapshot.query_task
     query_input = snapshot.query_input_snapshot or {}
+    summary_stats = snapshot.summary_stats or {}
+    cluster_count = summary_stats.get("cluster_count", 0)
+
+    if cluster_count == 0:
+        available_boards = ["hot"]
+    elif (query_task.query_type if query_task else query_input.get("query_type")) == "one_click":
+        available_boards = ["hot", "growth"]
+    else:
+        available_boards = ["hot", "growth", "opportunity"]
+
+    if query_task is not None:
+        query_type = query_task.query_type
+        view_type = query_task.view_type
+        time_window = {
+            "start_at": query_task.window_start.isoformat(),
+            "end_at": query_task.window_end.isoformat(),
+        }
+    else:
+        query_type = query_input.get("query_type", "one_click")
+        view_type = query_input.get("view_type", "active")
+        time_window = {
+            "start_at": query_input.get("time_window", {}).get("start_at")
+            or snapshot.generated_at.isoformat(),
+            "end_at": query_input.get("time_window", {}).get("end_at")
+            or snapshot.generated_at.isoformat(),
+        }
+
     return {
         "data": {
             "result_snapshot_id": str(snapshot.id),
             "query_task_id": str(snapshot.query_task_id),
-            "query_type": query_input.get("query_type", "one_click"),
-            "view_type": query_input.get("view_type", "active"),
-            "time_window": {
-                "start_at": snapshot.query_input_snapshot.get("time_window", {}).get("start_at")
-                or snapshot.generated_at.isoformat(),
-                "end_at": snapshot.query_input_snapshot.get("time_window", {}).get("end_at")
-                or snapshot.generated_at.isoformat(),
-            },
+            "query_type": query_type,
+            "view_type": view_type,
+            "time_window": time_window,
             "generated_at": snapshot.generated_at.isoformat(),
             "coverage_note": snapshot.coverage_note,
             "sync_freshness_note": snapshot.sync_freshness_note,
-            "summary_stats": snapshot.summary_stats,
-            "available_boards": ["hot", "growth", "opportunity"],
+            "summary_stats": summary_stats,
+            "available_boards": available_boards,
         },
-        "meta": {},
+        "meta": {
+            "response_source": "database",
+        },
         "error": None,
     }

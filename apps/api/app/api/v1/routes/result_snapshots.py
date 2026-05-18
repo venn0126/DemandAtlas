@@ -12,7 +12,7 @@ from app.api.v1.schemas.result_snapshot import (
 from app.common.response import build_success_response
 from app.db.deps import get_db
 from app.services.result_snapshot_service import (
-    get_result_snapshot_summary,
+    get_demo_result_snapshot_summary,
     get_result_snapshot_summary_from_db,
 )
 
@@ -30,7 +30,7 @@ def get_result_snapshot(
     payload = get_result_snapshot_summary_from_db(db, result_snapshot_id)
 
     if payload is None:
-        payload = get_result_snapshot_summary(result_snapshot_id)
+        payload = get_demo_result_snapshot_summary(result_snapshot_id)
 
     if not payload:
         raise HTTPException(status_code=404, detail="result snapshot not found")

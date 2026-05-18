@@ -130,10 +130,17 @@
     - `app/api/v1/routes/query_tasks.py`
   - 已接入路由：
     - `POST /api/v1/query-tasks`
-  - 已实现静态分支：
-    - `one_click` -> `200 cache_hit`
-    - `directed` -> `202 accepted`
+  - 当前已演进为数据库优先创建链路：
+    - `one_click`
+      - 成功缓存命中 -> `200 cache_hit`
+      - 进行中任务复用 -> `202 accepted`
+      - 未命中 -> `202 accepted`
+    - `directed`
+      - 成功缓存命中 -> `200 cache_hit`
+      - 进行中任务复用 -> `202 accepted`
+      - 未命中 -> `202 accepted`
     - 关键词过宽 -> `422 QUERY_TOO_BROAD`
+    - `force_refresh=true` -> 显式绕过缓存与 inflight 复用
   - 已完成代码级验证：
     - 直接调用 service 分支逻辑正确
     - 直接调用 route 函数返回结构正确

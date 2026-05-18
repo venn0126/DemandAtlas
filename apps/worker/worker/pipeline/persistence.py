@@ -92,6 +92,7 @@ def append_stage_log(
     finished_at: str,
     current_step: int,
     total_steps: int,
+    stage_meta: dict | None = None,
 ) -> None:
     stmt = query_task_run_logs_table.insert().values(
         id=uuid4(),
@@ -102,6 +103,7 @@ def append_stage_log(
         meta={
             "current_step": current_step,
             "total_steps": total_steps,
+            **(stage_meta or {}),
         },
         started_at=datetime.fromisoformat(started_at),
         finished_at=datetime.fromisoformat(finished_at),
@@ -111,10 +113,14 @@ def append_stage_log(
         connection.execute(stmt)
 
 
-def create_result_snapshot_and_mark_success(
+def create_result_snapshot_and_mark_completion(
     *,
     query_task_id: str,
     query_input_snapshot: dict,
+    final_status: str,
+    summary_stats: dict,
+    coverage_note: str | None,
+    sync_freshness_note: str | None,
     pipeline_version: str,
 ) -> str:
     result_snapshot_uuid = uuid4()
@@ -123,7 +129,7 @@ def create_result_snapshot_and_mark_success(
         update(query_tasks_table)
         .where(query_tasks_table.c.id == to_uuid(query_task_id))
         .values(
-            status="success",
+            status=final_status,
             result_snapshot_id=result_snapshot_uuid,
             finished_at=utc_now(),
             updated_at=utc_now(),
@@ -137,13 +143,9 @@ def create_result_snapshot_and_mark_success(
                 query_task_id=to_uuid(query_task_id),
                 query_input_snapshot=query_input_snapshot,
                 template_snapshot=None,
-                summary_stats={
-                    "cluster_count": 1,
-                    "post_count": 1,
-                    "comment_count": 1,
-                },
-                coverage_note="placeholder worker pipeline completed",
-                sync_freshness_note="placeholder sync freshness note",
+                summary_stats=summary_stats,
+                coverage_note=coverage_note,
+                sync_freshness_note=sync_freshness_note,
                 pipeline_version=pipeline_version,
                 generated_at=utc_now(),
                 created_at=utc_now(),

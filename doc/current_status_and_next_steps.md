@@ -3,8 +3,8 @@
 ## 1. 文档信息
 
 - 文档名称：Demand Atlas｜需见 当前进度与下一步执行说明
-- 文档版本：V1.0
-- 更新时间：2026-05-12
+- 文档版本：V1.1
+- 更新时间：2026-05-15
 - 适用场景：中断后恢复 / 下次开工前快速对齐 / 项目 handoff
 
 ---
@@ -72,6 +72,42 @@
 - QueryTask / ResultSnapshot 已开始接入数据库优先链路（当前保留静态回退）
 - QueryTask 最小真实数据库链路已验证通过
 - ResultSnapshot 最小真实数据库链路已验证通过
+- QueryTask 状态读取已开始基于 `query_task_run_logs` 推导真实阶段与进度
+- ResultSnapshot 摘要读取已开始基于真实 `query_tasks` / `result_snapshots` 字段拼装
+- QueryTask 状态读取已开始消费真实 `result_snapshots.coverage_note`
+- API 已补充 enqueue 失败即时落库失败态，避免 QueryTask 长时间停留在 `pending`
+- Worker 占位 pipeline 已开始基于真实请求内容生成 `summary_stats` / `coverage_note` / `sync_freshness_note`
+- `scripts/smoke-test.sh` 默认模式已切换为真实异步链路轮询验证（保留 `demo_static` 兼容模式）
+- `POST /api/v1/query-tasks` 已移除异常时静态假成功回退，创建失败将直接返回 500
+- Worker 占位 pipeline 已支持 `success / partial_success / failed` 三种结果态写回
+- `GET /query-tasks/{id}` 与 `GET /result-snapshots/{id}` 的静态回退已收缩为仅对显式 demo ID 生效
+- QueryTask / ResultSnapshot 读取接口已在 `meta.response_source` 标记 `database` / `demo_static`
+- `POST /api/v1/query-tasks` 的服务层静态创建逻辑已拆除，当前仅保留真实创建主路径 + 显式校验错误
+- QueryTask 创建接口响应已开始在 `meta.response_source` 标记 `database`
+- OneClick QueryTask 已开始支持真实缓存命中：同请求优先复用已成功快照
+- OneClick QueryTask 在未命中缓存时已改为返回真实 `202 async`，不再直接在 API 层同步造快照
+- OneClick QueryTask 已支持进行中任务复用，避免同请求短时间内重复创建
+- Directed QueryTask 已开始支持真实缓存命中：同请求优先复用已成功快照
+- Directed QueryTask 已支持进行中任务复用，避免同请求短时间内重复创建
+- 创建路由已避免对“进行中任务复用”结果重复 enqueue
+- QueryTask 创建接口已开始返回更细的缓存元信息：
+  - `cache_source`
+  - `cache_hit_query_task_id`
+  - `cache_hit_result_snapshot_id`
+  - `cache_freshness_seconds`
+- 成功快照复用已加入基础 freshness 门槛，当前仅复用 6 小时内成功结果
+- 缓存策略已支持按 query_type 分别配置：
+  - `ONE_CLICK_CACHE_MAX_AGE_SECONDS`
+  - `DIRECTED_CACHE_MAX_AGE_SECONDS`
+- `partial_success` 是否允许复用已支持配置化：
+  - `ONE_CLICK_CACHE_ALLOW_PARTIAL_SUCCESS`
+  - `DIRECTED_CACHE_ALLOW_PARTIAL_SUCCESS`
+- 命中缓存时已开始返回 `cache_hit_status`，可区分命中的是 `success` 还是 `partial_success`
+- `force_refresh=true` 的创建请求已开始显式返回绕过信息：
+  - `force_refresh_applied`
+  - `force_refresh_bypass_cache_lookup`
+  - `force_refresh_bypass_inflight_reuse`
+  - `force_refresh_query_type`
 
 ## 3.5 项目交付推进
 
@@ -183,6 +219,20 @@
 ### 当前补充结论
 
 当前仓库已从“本地可运行”推进到“测试机可运行”阶段，并已完成最小真实异步链路验证。
+
+本地代码侧已继续推进真实链路：
+
+- QueryTask enqueue 失败会立即写回 `failed`
+- Worker 产出的占位快照已不再固定写死为 `1/1/1`
+- smoke test 默认验证真实 `POST /query-tasks -> Worker -> result_snapshots` 闭环
+- API 创建 QueryTask 不再因数据库异常回落到静态 `qt_*`
+- Worker 已开始把部分异常场景显式落为 `partial_success / failed`
+
+上述新增项当前已完成静态校验：
+
+- `bash -n scripts/smoke-test.sh scripts/run-worker.sh scripts/restart-worker.sh scripts/restart-api.sh`
+- `cd apps/api && uv run python -m compileall app`
+- `cd apps/worker && uv run python -m compileall worker`
 
 ---
 

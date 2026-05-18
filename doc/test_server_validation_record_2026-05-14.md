@@ -134,6 +134,23 @@ POST /api/v1/query-tasks
 - 当前主链 smoke test 已通过
 - 最小真实 QueryTask -> Worker -> DB -> ResultSnapshot 链路已通过
 
+补充说明：
+
+- 2026-05-15 已在本地仓库继续推进：
+  - `QueryTask` enqueue 失败即时写回 `failed`
+  - Worker 占位快照改为基于请求内容生成动态 `summary_stats`
+  - `scripts/smoke-test.sh` 默认切到真实异步链路模式
+- 2026-05-18 已在本地仓库继续推进：
+  - OneClick / Directed 都已支持成功缓存命中与进行中任务复用
+  - 成功缓存已加入 freshness 策略，并支持按 query_type 配置
+  - `partial_success` 复用策略已支持配置化
+  - `force_refresh=true` 已显式绕过成功缓存与进行中任务复用
+  - `scripts/smoke-test.sh` 已增加：
+    - OneClick 二次 `cache_hit`
+    - Directed 二次 `cache_hit`
+    - OneClick / Directed `force_refresh=true` 绕过缓存验证
+- 上述更新当前仅完成本地静态校验，尚未写入本记录的测试机复验结论
+
 ---
 
 ## 9. 当前遗留说明

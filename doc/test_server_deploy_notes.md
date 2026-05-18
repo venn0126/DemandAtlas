@@ -51,6 +51,21 @@ cd /srv/demand-atlas
 cp .env.example .env
 ```
 
+当前与缓存 / 复用相关的重点环境变量：
+
+```bash
+ONE_CLICK_CACHE_MAX_AGE_SECONDS=21600
+DIRECTED_CACHE_MAX_AGE_SECONDS=21600
+ONE_CLICK_CACHE_ALLOW_PARTIAL_SUCCESS=false
+DIRECTED_CACHE_ALLOW_PARTIAL_SUCCESS=false
+```
+
+说明：
+
+- `*_CACHE_MAX_AGE_SECONDS` 控制成功结果可复用的 freshness 窗口
+- `*_CACHE_ALLOW_PARTIAL_SUCCESS` 控制是否允许复用 `partial_success`
+- `force_refresh=true` 会显式绕过成功缓存与进行中任务复用
+
 ### Step 2.5：若是全新 Ubuntu，先一键安装依赖
 
 ```bash
@@ -223,10 +238,14 @@ cd /srv/demand-atlas
 
 1. API health
 2. TopicTemplate 列表
-3. QueryTask 创建
-4. QueryTask 状态读取
-5. ResultSnapshot 摘要读取
-6. Web 根页面
+3. OneClick warmup
+4. OneClick 二次请求返回 `cache_hit`
+5. OneClick `force_refresh=true` 返回真实 `async`
+6. Directed async 创建
+7. Directed 轮询直到生成真实 `result_snapshot`
+8. Directed 二次请求返回 `cache_hit`
+9. Directed `force_refresh=true` 返回真实 `async`
+10. Web 根页面
 
 ---
 
@@ -255,6 +274,30 @@ curl -X POST \
   http://127.0.0.1:8000/api/v1/query-tasks
 ```
 
+可重点观察返回中的：
+
+- `meta.cache_source`
+- `meta.cache_freshness_seconds`
+- `meta.cache_hit_query_task_id`
+- `meta.cache_hit_result_snapshot_id`
+- `meta.cache_hit_status`
+
+### Query task create with force_refresh
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"query_type":"directed","keywords":["smoke-test"],"time_window":{"preset":"30d"},"force_refresh":true}' \
+  http://127.0.0.1:8000/api/v1/query-tasks
+```
+
+可重点观察返回中的：
+
+- `meta.force_refresh_applied`
+- `meta.force_refresh_bypass_cache_lookup`
+- `meta.force_refresh_bypass_inflight_reuse`
+- `meta.force_refresh_query_type`
+
 ### Query task status
 
 ```bash
@@ -273,7 +316,7 @@ curl http://127.0.0.1:8000/api/v1/result-snapshots/rs_01JVA1T4WM4B3PG5N8W1HEP7QA
 
 当前测试机版本仍有以下限制：
 
-- QueryTask / ResultSnapshot 接口以静态 / mock 风格返回为主
+- QueryTask / ResultSnapshot 已转为数据库优先，但仍保留显式 demo ID 静态回退
 - 数据库 migration 在线验证依赖真实 PostgreSQL 实例
 - Worker pipeline 仍是占位链路，不做真实数据处理
 - API -> Worker 已有最小投递链路，但 Redis 不可达时会降级

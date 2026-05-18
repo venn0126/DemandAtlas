@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.query_task import (
@@ -16,7 +16,10 @@ from app.api.v1.schemas.query_task import (
 from app.common.response import build_error_response, build_success_response
 from app.db.deps import get_db
 from app.integrations.worker_client import enqueue_query_task_pipeline
-from app.services.query_task_service import create_query_task_from_db, create_query_task_response
+from app.services.query_task_service import (
+    create_query_task_from_db,
+    mark_query_task_enqueue_failed,
+)
 
 router = APIRouter(tags=["QueryTasks"])
 logger = logging.getLogger(__name__)
@@ -34,8 +37,8 @@ def create_query_task(
     try:
         status_code, result = create_query_task_from_db(db, payload.model_dump())
     except Exception as exc:
-        logger.warning("create_query_task fell back to static response: %s", exc)
-        status_code, result = create_query_task_response(payload.model_dump())
+        logger.exception("create_query_task failed")
+        raise HTTPException(status_code=500, detail="failed to create query task") from exc
     response.status_code = status_code
 
     if status_code == 422 and result["error"]:
@@ -46,7 +49,12 @@ def create_query_task(
         )
 
     if status_code == 202 and result["data"]:
-        enqueue_query_task_pipeline(result["data"]["query_task_id"])
+        query_task_id = result["data"]["query_task_id"]
+        cache_source = result["meta"].get("cache_source")
+        if cache_source in {None, "cache_miss"}:
+            if not enqueue_query_task_pipeline(query_task_id):
+                logger.warning("query task enqueue failed, marking task as failed", extra={"query_task_id": query_task_id})
+                mark_query_task_enqueue_failed(db, query_task_id)
 
     return build_success_response(
         data=result["data"],

@@ -157,6 +157,10 @@ git clone <repo-url> .
 - [ ] `POSTGRES_*`
 - [ ] `DATABASE_URL`
 - [ ] `REDIS_*`
+- [ ] `ONE_CLICK_CACHE_MAX_AGE_SECONDS`
+- [ ] `DIRECTED_CACHE_MAX_AGE_SECONDS`
+- [ ] `ONE_CLICK_CACHE_ALLOW_PARTIAL_SUCCESS`
+- [ ] `DIRECTED_CACHE_ALLOW_PARTIAL_SUCCESS`
 - [ ] `MINIO_*`
 
 建议验证：
@@ -221,6 +225,9 @@ bash -n scripts/bootstrap.sh scripts/dev-up.sh scripts/dev-down.sh scripts/run-a
 - [ ] API health
 - [ ] TopicTemplate 列表
 - [ ] QueryTask 创建
+- [ ] OneClick 二次请求返回 `cache_hit`
+- [ ] Directed 二次请求返回 `cache_hit`
+- [ ] `force_refresh=true` 时返回真实 `async` 且绕过缓存
 - [ ] QueryTask 状态查询
 - [ ] ResultSnapshot 摘要读取
 - [ ] Web 前端可访问
