@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.api.v1.schemas.result_snapshot import SnapshotPipelineMetadata
 from app.api.v1.schemas.topic_template import ApiError, ApiMeta
 
 
@@ -117,6 +118,19 @@ class WarningItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class QueryTaskStatusMeta(BaseModel):
+    response_source: Literal["database", "demo_static"] | None = None
+    pipeline_metadata: SnapshotPipelineMetadata | None = None
+    warning_count: int | None = None
+    coverage_status: Literal["success", "partial_success", "failed"] | None = None
+    requested_source_count: int | None = None
+    completed_source_count: int | None = None
+    source_scope_count: int | None = None
+    result_cluster_count: int | None = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class QueryTaskStatusData(BaseModel):
     query_task_id: str
     status: Literal["pending", "running", "partial_success", "success", "failed"]
@@ -132,7 +146,7 @@ class QueryTaskStatusData(BaseModel):
 class QueryTaskStatusResponse(BaseModel):
     request_id: str
     data: QueryTaskStatusData
-    meta: ApiMeta = ApiMeta()
+    meta: QueryTaskStatusMeta = QueryTaskStatusMeta()
     error: ApiError | None = None
 
     model_config = ConfigDict(extra="forbid")

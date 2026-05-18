@@ -119,6 +119,22 @@
   - `completed_source_count`
   - `source_scope_count`
   - `result_cluster_count`
+- ResultSnapshot 摘要接口 schema 已开始显式建模：
+  - `pipeline_metadata`
+  - `warning_count`
+- ResultSnapshot 路由已开始按完整 response model 做严格校验
+- QueryTask 状态接口 schema 已开始显式建模：
+  - `pipeline_metadata`
+  - `warning_count`
+  - `coverage_status`
+  - `requested_source_count`
+  - `completed_source_count`
+  - `source_scope_count`
+  - `result_cluster_count`
+- QueryTask 状态路由已开始按完整 response model 做严格校验
+- 已新增测试脚本：
+  - `scripts/verify-query-task-meta.sh`
+  - `scripts/verify-result-snapshot-meta.sh`
 
 ## 3.5 项目交付推进
 

@@ -35,7 +35,8 @@ def get_result_snapshot(
     if not payload:
         raise HTTPException(status_code=404, detail="result snapshot not found")
 
-    return build_success_response(
+    response_payload = build_success_response(
         data=ResultSnapshotSummary.model_validate(payload["data"]).model_dump(),
         meta=payload["meta"],
     )
+    return ResultSnapshotSummaryResponse.model_validate(response_payload).model_dump()

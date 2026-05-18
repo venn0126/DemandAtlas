@@ -32,10 +32,11 @@ def get_query_task_status(
         "query_task_id": query_task_id,
     }
 
-    return build_success_response(
+    response_payload = build_success_response(
         data=data,
         meta=payload["meta"],
     ) if payload["error"] is None else {
         **build_success_response(data=data, meta=payload["meta"]),
         "error": payload["error"],
     }
+    return QueryTaskStatusResponse.model_validate(response_payload).model_dump()
