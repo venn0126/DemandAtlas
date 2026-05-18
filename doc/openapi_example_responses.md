@@ -522,21 +522,21 @@
   "data": {
     "result_snapshot_id": "rs_01JVA1PAB2Y9PGKQ7NH1AK6R9M",
     "query_task_id": "qt_01JVA1M1WEX6NQ0QJQYY23H5Q8",
-    "query_type": "one_click",
+    "query_type": "directed",
     "view_type": "active",
     "time_window": {
-      "start_at": "2026-04-12T00:00:00Z",
-      "end_at": "2026-05-12T00:00:00Z"
+      "start_at": "2026-04-18T00:00:00+00:00",
+      "end_at": "2026-05-18T00:00:00+00:00"
     },
-    "generated_at": "2026-05-12T09:10:00Z",
-    "coverage_note": "partial coverage: 2 candidate subreddits unavailable during fetch",
-    "sync_freshness_note": "latest source sync at 2026-05-12T08:45:00Z",
+    "generated_at": "2026-05-18T10:11:04.238775+00:00",
+    "coverage_note": "partial coverage: 1 requested subreddit unavailable during fetch",
+    "sync_freshness_note": "latest source sync at 2026-05-18T10:11:04.217814+00:00",
     "summary_stats": {
-      "cluster_count": 11,
-      "post_count": 141,
-      "comment_count": 1094
+      "cluster_count": 6,
+      "post_count": 24,
+      "comment_count": 120
     },
-    "available_boards": ["hot", "growth"]
+    "available_boards": ["hot", "growth", "opportunity"]
   },
   "meta": {
     "response_source": "database",

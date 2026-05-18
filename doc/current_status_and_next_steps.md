@@ -136,6 +136,9 @@
   - `scripts/verify-query-task-meta.sh`
   - `scripts/verify-result-snapshot-meta.sh`
   - `scripts/verify-api-contract.sh`
+  - `scripts/verify-result-snapshot-explore.sh`
+- `GET /result-snapshots/{id}/boards/{board_type}` 已补最小真实数据库优先读取链路
+- `GET /result-snapshots/{id}/clusters/{cluster_id}` 已补最小真实数据库优先读取链路
 
 ## 3.5 项目交付推进
 
