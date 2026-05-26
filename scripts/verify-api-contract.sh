@@ -30,4 +30,7 @@ bash "${ROOT_DIR}/scripts/verify-result-snapshot-meta.sh"
 echo "[verify-api-contract] step 4/4: result snapshot explore"
 bash "${ROOT_DIR}/scripts/verify-result-snapshot-explore.sh"
 
+echo "[verify-api-contract] step 5/5: result consistency"
+bash "${ROOT_DIR}/scripts/verify-result-consistency.sh"
+
 echo "[verify-api-contract] all checks passed"

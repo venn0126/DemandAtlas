@@ -114,14 +114,22 @@ def get_result_snapshot_summary_from_db(
     template_snapshot = snapshot.template_snapshot or {}
     pipeline_metadata = template_snapshot.get("pipeline_metadata") or {}
     warning_items = template_snapshot.get("warnings") or []
-    cluster_count = summary_stats.get("cluster_count", 0)
+    board_entries = snapshot.snapshot_clusters or []
+    metric_snapshots = snapshot.metric_snapshots or []
 
-    if cluster_count == 0:
+    available_boards = sorted(
+        {entry.board_type for entry in board_entries},
+        key=lambda item: {"hot": 0, "growth": 1, "opportunity": 2}.get(item, 99),
+    )
+    if not available_boards:
         available_boards = ["hot"]
-    elif (query_task.query_type if query_task else query_input.get("query_type")) == "one_click":
-        available_boards = ["hot", "growth"]
-    else:
-        available_boards = ["hot", "growth", "opportunity"]
+
+    if metric_snapshots:
+        summary_stats = {
+            "cluster_count": len(metric_snapshots),
+            "post_count": sum(item.post_count for item in metric_snapshots),
+            "comment_count": sum(item.comment_count for item in metric_snapshots),
+        }
 
     if query_task is not None:
         query_type = query_task.query_type

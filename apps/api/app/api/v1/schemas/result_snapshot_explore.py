@@ -120,6 +120,7 @@ class ClusterDetailMeta(BaseModel):
     evidence_next_page_token: str | None = None
     response_source: Literal["database", "demo_static"] | None = None
     warning_count: int | None = None
+    boards: list[Literal["hot", "growth", "opportunity"]] = []
 
     model_config = ConfigDict(extra="forbid")
 

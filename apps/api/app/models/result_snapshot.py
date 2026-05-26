@@ -35,6 +35,13 @@ class ResultSnapshot(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         back_populates="result_snapshots",
         primaryjoin="foreign(ResultSnapshot.query_task_id) == QueryTask.id",
     )
+    metric_snapshots: Mapped[list["ClusterMetricSnapshot"]] = relationship(
+        back_populates="result_snapshot"
+    )
+    snapshot_clusters: Mapped[list["ResultSnapshotCluster"]] = relationship(
+        back_populates="result_snapshot"
+    )
 
 
 from app.models.query_task import QueryTask  # noqa: E402
+from app.models.demand_cluster import ClusterMetricSnapshot, ResultSnapshotCluster  # noqa: E402

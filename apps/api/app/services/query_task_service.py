@@ -587,6 +587,8 @@ def get_query_task_status_from_db(db: Session, query_task_id: str) -> dict[str, 
     coverage_meta = pipeline_metadata.get("coverage") or {}
     source_scope_meta = pipeline_metadata.get("source_scope") or {}
     result_profile_meta = pipeline_metadata.get("result_profile") or {}
+    metric_snapshots = snapshot.metric_snapshots if snapshot else []
+    result_cluster_count = len(metric_snapshots) if metric_snapshots else result_profile_meta.get("cluster_count")
 
     return {
         "data": {
@@ -610,7 +612,7 @@ def get_query_task_status_from_db(db: Session, query_task_id: str) -> dict[str, 
             "requested_source_count": coverage_meta.get("requested_source_count"),
             "completed_source_count": coverage_meta.get("completed_source_count"),
             "source_scope_count": source_scope_meta.get("source_count"),
-            "result_cluster_count": result_profile_meta.get("cluster_count"),
+            "result_cluster_count": result_cluster_count,
         },
         "error": (
             {
