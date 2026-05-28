@@ -40,6 +40,8 @@ for key in sys.argv[1].split("."):
 
 if value is None:
     print("")
+elif isinstance(value, bool):
+    print("true" if value else "false")
 elif isinstance(value, (dict, list)):
     print(json.dumps(value, ensure_ascii=False))
 else:
@@ -145,7 +147,7 @@ ONE_CLICK_FORCE_REFRESH_RESPONSE="$(
 
 ONE_CLICK_FORCE_REFRESH_MODE="$(printf '%s' "${ONE_CLICK_FORCE_REFRESH_RESPONSE}" | extract_json_field "data.execution_mode")"
 ONE_CLICK_FORCE_REFRESH_APPLIED="$(printf '%s' "${ONE_CLICK_FORCE_REFRESH_RESPONSE}" | extract_json_field "meta.force_refresh_applied")"
-if [[ "${ONE_CLICK_FORCE_REFRESH_MODE}" != "async" || "${ONE_CLICK_FORCE_REFRESH_APPLIED}" != "True" ]]; then
+if [[ "${ONE_CLICK_FORCE_REFRESH_MODE}" != "async" || "${ONE_CLICK_FORCE_REFRESH_APPLIED}" != "true" ]]; then
   echo "[smoke-test] error: one_click force_refresh did not bypass cache as expected"
   echo "${ONE_CLICK_FORCE_REFRESH_RESPONSE}"
   exit 1
@@ -255,7 +257,7 @@ else
 
   DIRECTED_FORCE_REFRESH_MODE="$(printf '%s' "${DIRECTED_FORCE_REFRESH_RESPONSE}" | extract_json_field "data.execution_mode")"
   DIRECTED_FORCE_REFRESH_APPLIED="$(printf '%s' "${DIRECTED_FORCE_REFRESH_RESPONSE}" | extract_json_field "meta.force_refresh_applied")"
-  if [[ "${DIRECTED_FORCE_REFRESH_MODE}" != "async" || "${DIRECTED_FORCE_REFRESH_APPLIED}" != "True" ]]; then
+  if [[ "${DIRECTED_FORCE_REFRESH_MODE}" != "async" || "${DIRECTED_FORCE_REFRESH_APPLIED}" != "true" ]]; then
     echo "[smoke-test] error: directed force_refresh did not bypass cache as expected"
     echo "${DIRECTED_FORCE_REFRESH_RESPONSE}"
     exit 1

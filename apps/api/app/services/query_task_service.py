@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from uuid import UUID
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -34,7 +34,11 @@ PIPELINE_STAGE_ORDER = {
 }
 
 
-def _resolve_progress_from_logs(status: str, run_logs: list[Any], has_snapshot: bool) -> tuple[int, int, int, str | None]:
+def _resolve_progress_from_logs(
+    status: str,
+    run_logs: list[Any],
+    has_snapshot: bool,
+) -> tuple[int, int, int, str | None]:
     latest_log = run_logs[-1] if run_logs else None
 
     if latest_log is None:
@@ -119,7 +123,14 @@ def _merge_warning_items(*warning_groups: list[dict[str, str]]) -> list[dict[str
     return merged
 
 
-def _build_cache_metadata(*, cache_source: str, freshness_seconds: int | None = None, cache_hit_query_task_id: str | None = None, cache_hit_result_snapshot_id: str | None = None, cache_hit_status: str | None = None) -> dict[str, Any]:
+def _build_cache_metadata(
+    *,
+    cache_source: str,
+    freshness_seconds: int | None = None,
+    cache_hit_query_task_id: str | None = None,
+    cache_hit_result_snapshot_id: str | None = None,
+    cache_hit_status: str | None = None,
+) -> dict[str, Any]:
     meta: dict[str, Any] = {
         "response_source": "database",
         "cache_source": cache_source,
@@ -247,7 +258,10 @@ QUERY_TASK_STATUS_MAP: dict[str, dict[str, Any]] = {
                 "percent": 100,
             },
             "result_snapshot_id": "rs_01JVA1PAB2Y9PGKQ7NH1AK6R9M",
-            "coverage_note": "2 candidate subreddits failed during fetch; results were generated from available sources",
+            "coverage_note": (
+                "2 candidate subreddits failed during fetch; "
+                "results were generated from available sources"
+            ),
             "warnings": [
                 {
                     "code": "PARTIAL_FETCH_FAILURE",
@@ -362,7 +376,7 @@ def create_query_task_from_db(db: Session, payload: dict[str, Any]) -> tuple[int
                             "data": {
                                 "execution_mode": "cache_hit",
                                 "query_task_id": str(cached_query_task.id),
-                                "status": "success",
+                                "status": cached_query_task.status,
                                 "result_snapshot_id": str(cached_query_task.result_snapshot_id),
                                 "cached": True,
                             },
@@ -391,7 +405,7 @@ def create_query_task_from_db(db: Session, payload: dict[str, Any]) -> tuple[int
                         "data": {
                             "execution_mode": "async",
                             "query_task_id": str(inflight_query_task.id),
-                            "status": "pending",
+                            "status": inflight_query_task.status,
                             "poll_url": f"/api/v1/query-tasks/{inflight_query_task.id}",
                             "anonymous_query_access_token": "anon_tok_demo",
                         },
@@ -469,7 +483,7 @@ def create_query_task_from_db(db: Session, payload: dict[str, Any]) -> tuple[int
                         "data": {
                             "execution_mode": "cache_hit",
                             "query_task_id": str(cached_query_task.id),
-                            "status": "success",
+                            "status": cached_query_task.status,
                             "result_snapshot_id": str(cached_query_task.result_snapshot_id),
                             "cached": True,
                         },
@@ -498,7 +512,7 @@ def create_query_task_from_db(db: Session, payload: dict[str, Any]) -> tuple[int
                     "data": {
                         "execution_mode": "async",
                         "query_task_id": str(inflight_query_task.id),
-                        "status": "pending",
+                        "status": inflight_query_task.status,
                         "poll_url": f"/api/v1/query-tasks/{inflight_query_task.id}",
                         "anonymous_query_access_token": "anon_tok_demo",
                     },
@@ -588,7 +602,11 @@ def get_query_task_status_from_db(db: Session, query_task_id: str) -> dict[str, 
     source_scope_meta = pipeline_metadata.get("source_scope") or {}
     result_profile_meta = pipeline_metadata.get("result_profile") or {}
     metric_snapshots = snapshot.metric_snapshots if snapshot else []
-    result_cluster_count = len(metric_snapshots) if metric_snapshots else result_profile_meta.get("cluster_count")
+    result_cluster_count = (
+        len(metric_snapshots)
+        if metric_snapshots
+        else result_profile_meta.get("cluster_count")
+    )
 
     return {
         "data": {
@@ -600,7 +618,11 @@ def get_query_task_status_from_db(db: Session, query_task_id: str) -> dict[str, 
                 "total_steps": total_steps,
                 "percent": percent,
             },
-            "result_snapshot_id": str(query_task.result_snapshot_id) if query_task.result_snapshot_id else None,
+            "result_snapshot_id": (
+                str(query_task.result_snapshot_id)
+                if query_task.result_snapshot_id
+                else None
+            ),
             "coverage_note": coverage_note,
             "warnings": warnings,
         },

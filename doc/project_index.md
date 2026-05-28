@@ -38,7 +38,6 @@
 ### 第 1 步：理解产品是什么
 
 1. `doc/prd_reddit_needs_discovery.md`
-2. `doc/prd_review_and_edge_cases.md`
 
 ### 第 2 步：理解系统怎么设计
 
@@ -98,17 +97,6 @@
 用途：
 
 - 定义产品范围、功能边界、核心流程、MVP 范围
-
-### 2. PRD Review 与边界验证
-
-- `doc/prd_review_and_edge_cases.md`
-
-用途：
-
-- 检查主 PRD 是否足以支撑技术与设计
-- 记录边界 case 与必须补齐的定义
-
----
 
 ## 5.2 技术与系统设计类
 
@@ -364,7 +352,6 @@
 
 1. `doc/current_status_and_next_steps.md`
 1. `doc/prd_reddit_needs_discovery.md`
-2. `doc/prd_review_and_edge_cases.md`
 3. `doc/mvp_delivery_plan.md`
 4. `doc/sprint_01_backlog.md`
 5. `doc/sprint_02_backlog.md`
@@ -443,7 +430,6 @@
 
 - `doc/current_status_and_next_steps.md`
 - `doc/prd_reddit_needs_discovery.md`
-- `doc/prd_review_and_edge_cases.md`
 
 ## 7.2 技术方案阶段
 

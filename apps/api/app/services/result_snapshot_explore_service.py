@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from uuid import UUID
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -35,6 +35,10 @@ def _build_evidence_payload(evidence: Any) -> dict[str, Any]:
     }
 
 
+def _top_subreddits_from_evidence(evidences: list[Any], *, limit: int) -> list[str]:
+    return list(dict.fromkeys(evidence.subreddit_name for evidence in evidences))[:limit]
+
+
 def get_result_snapshot_board_from_db(
     db: Session,
     result_snapshot_id: str,
@@ -63,7 +67,11 @@ def get_result_snapshot_board_from_db(
     for entry, cluster, metric in rows:
         evidence_pool = sorted(
             cluster.evidences,
-            key=lambda item: (item.score_hint is None, item.score_hint or 0, item.source_created_at),
+            key=lambda item: (
+                item.score_hint is not None,
+                item.score_hint or 0,
+                item.source_created_at,
+            ),
             reverse=True,
         )
         highlight_evidence = [
@@ -71,12 +79,7 @@ def get_result_snapshot_board_from_db(
             for evidence in evidence_pool
             if evidence.stance == "support"
         ][:2]
-        top_subreddits = list(
-            dict.fromkeys(
-                [evidence.subreddit_name for evidence in evidence_pool[:3]]
-                or [cluster.evidences[0].subreddit_name] if cluster.evidences else []
-            )
-        )
+        top_subreddits = _top_subreddits_from_evidence(evidence_pool, limit=3)
 
         if metric is None:
             continue
@@ -118,7 +121,10 @@ def get_result_snapshot_board_from_db(
     }
 
 
-def get_demo_result_snapshot_board(result_snapshot_id: str, board_type: str) -> dict[str, Any] | None:
+def get_demo_result_snapshot_board(
+    result_snapshot_id: str,
+    board_type: str,
+) -> dict[str, Any] | None:
     payload = DEMO_BOARD_MAP.get((result_snapshot_id, board_type))
     if payload is None:
         return None
@@ -168,7 +174,7 @@ def get_cluster_detail_from_db(
         for evidence in evidences
         if evidence.stance == "oppose"
     ]
-    top_subreddits = list(dict.fromkeys(evidence.subreddit_name for evidence in evidences))[:5]
+    top_subreddits = _top_subreddits_from_evidence(evidences, limit=5)
     warning_items = (snapshot.template_snapshot or {}).get("warnings") or []
 
     return {

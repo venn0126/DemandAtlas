@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any
 
 from worker.fetch.reddit_connector import RedditConnector
@@ -9,7 +9,6 @@ from worker.pipeline.stages import FINALIZING_STAGE, PIPELINE_STAGES
 from worker.pipeline.template_loader import load_topic_template_runtime
 from worker.pipeline.types import (
     FetchWarning,
-    PipelineRuntimeResult,
     QueryExecutionPlan,
     SourceComment,
     SourcePost,
@@ -28,7 +27,10 @@ def _normalized_string_list(value: Any) -> list[str]:
     return [item.strip() for item in value if isinstance(item, str) and item.strip()]
 
 
-def _resolve_plan(query_input: dict[str, Any], query_task_context: dict[str, Any]) -> QueryExecutionPlan:
+def _resolve_plan(
+    query_input: dict[str, Any],
+    query_task_context: dict[str, Any],
+) -> QueryExecutionPlan:
     query_type = query_task_context.get("query_type") or query_input.get("query_type", "directed")
     language = query_task_context.get("language") or query_input.get("language", "en")
     view_type = query_task_context.get("view_type") or query_input.get("view_type", "active")
@@ -70,7 +72,11 @@ def _resolve_plan(query_input: dict[str, Any], query_task_context: dict[str, Any
     )
 
 
-def _build_summary_stats(posts: list[SourcePost], comments: list[SourceComment], cluster_count: int) -> dict[str, int]:
+def _build_summary_stats(
+    posts: list[SourcePost],
+    comments: list[SourceComment],
+    cluster_count: int,
+) -> dict[str, int]:
     return {
         "cluster_count": cluster_count,
         "post_count": len(posts),
@@ -107,16 +113,29 @@ def _build_pipeline_metadata(
     }
 
 
-def _build_coverage_note(plan: QueryExecutionPlan, warnings: list[FetchWarning], cluster_count: int) -> str | None:
+def _build_coverage_note(
+    plan: QueryExecutionPlan,
+    warnings: list[FetchWarning],
+    cluster_count: int,
+) -> str | None:
     if cluster_count == 0:
         return "no valid clusters were formed from available sources"
 
     if warnings:
-        missing_count = len([warning for warning in warnings if warning.code == "SOURCE_FETCH_PARTIAL"])
+        missing_count = len(
+            [warning for warning in warnings if warning.code == "SOURCE_FETCH_PARTIAL"]
+        )
         if missing_count > 0:
             if plan.subreddits:
-                return f"partial coverage: {missing_count} requested subreddits unavailable during fetch"
+                return (
+                    f"partial coverage: {missing_count} requested subreddits "
+                    "unavailable during fetch"
+                )
             return f"partial coverage: {missing_count} candidate sources unavailable during fetch"
+        return (
+            "partial coverage: source fetch degraded and results were generated "
+            "from fallback data"
+        )
 
     if plan.subreddits:
         return f"full coverage on {len(plan.subreddits)} requested subreddits"
@@ -131,14 +150,38 @@ def _build_available_boards(cluster_count: int) -> list[str]:
     return ["hot", "growth", "opportunity"]
 
 
-def _warning_items(fetch_warnings: list[FetchWarning]) -> list[dict[str, str]]:
-    return [
+def _warning_items(
+    fetch_warnings: list[FetchWarning],
+    *,
+    cluster_count: int | None = None,
+) -> list[dict[str, str]]:
+    items = [
         {
             "code": warning.code,
             "message": warning.message,
         }
         for warning in fetch_warnings
     ]
+    if cluster_count is not None and cluster_count <= 0:
+        items.append(
+            {
+                "code": "NO_RESULT_CLUSTER",
+                "message": "no valid clusters were formed from available sources",
+            }
+        )
+    return items
+
+
+def _build_outcome_status(fetch_warnings: list[FetchWarning], cluster_count: int) -> str:
+    if fetch_warnings or cluster_count <= 0:
+        return "partial_success"
+    return "success"
+
+
+def _source_url_from_permalink(permalink: str) -> str:
+    if permalink.startswith("/"):
+        return f"https://reddit.com{permalink}"
+    return permalink
 
 
 def _normalize_posts(raw_posts: list[dict[str, Any]]) -> list[SourcePost]:
@@ -163,7 +206,7 @@ def _normalize_posts(raw_posts: list[dict[str, Any]]) -> list[SourcePost]:
                 is_pinned=bool(post.get("stickied") or False),
                 is_nsfw=bool(post.get("over_18") or False),
                 raw_payload_ref=f"raw/reddit/post/{post['id']}.json",
-                source_url=f"https://reddit.com{permalink}" if permalink.startswith("/") else permalink,
+                source_url=_source_url_from_permalink(permalink),
                 matched_keywords=post.get("matched_keywords") or [],
             )
         )
@@ -190,18 +233,25 @@ def _normalize_comments(raw_comments: list[dict[str, Any]]) -> list[SourceCommen
                 fetched_at=datetime.now(UTC),
                 content_availability_status="public",
                 raw_payload_ref=f"raw/reddit/comment/{comment['id']}.json",
-                source_url=f"https://reddit.com{permalink}" if permalink.startswith("/") else permalink,
+                source_url=_source_url_from_permalink(permalink),
                 matched_keywords=comment.get("matched_keywords") or [],
             )
         )
     return normalized
 
 
-def _filter_retrieved_posts(plan: QueryExecutionPlan, posts: list[SourcePost], comments: list[SourceComment]) -> tuple[list[SourcePost], list[SourceComment]]:
+def _filter_retrieved_posts(
+    plan: QueryExecutionPlan,
+    posts: list[SourcePost],
+    comments: list[SourceComment],
+) -> tuple[list[SourcePost], list[SourceComment]]:
     include_terms = [term.lower() for term in plan.keywords if term.strip()]
     exclude_terms = []
     if plan.query_type == "one_click":
-        template = load_topic_template_runtime(plan.template_id or "tpl_ai_tools", plan.template_version_id)
+        template = load_topic_template_runtime(
+            plan.template_id or "tpl_ai_tools",
+            plan.template_version_id,
+        )
         exclude_terms = [term.lower() for term in template.exclude_terms]
 
     filtered_posts: list[SourcePost] = []
@@ -224,7 +274,11 @@ def _filter_retrieved_posts(plan: QueryExecutionPlan, posts: list[SourcePost], c
     return filtered_posts, filtered_comments
 
 
-def _determine_outcome(posts: list[SourcePost], completed_source_count: int, source_count: int) -> tuple[str, str | None]:
+def _determine_outcome(
+    posts: list[SourcePost],
+    completed_source_count: int,
+    source_count: int,
+) -> tuple[str, str | None]:
     if source_count <= 0:
         return "failed", "no source scope resolved for query task"
     if completed_source_count <= 0 or not posts:
@@ -297,7 +351,11 @@ def run_pipeline(
             "query_task_id": query_task_id,
             "status": "failed",
             "current_stage": FINALIZING_STAGE,
-            "progress": {"current_step": 1, "total_steps": len(PIPELINE_STAGES), "percent": 12},
+            "progress": {
+                "current_step": 1,
+                "total_steps": len(PIPELINE_STAGES),
+                "percent": 12,
+            },
             "timeline": timeline,
             "result_snapshot_id": None,
             "coverage_note": None,
@@ -333,8 +391,15 @@ def run_pipeline(
     raw_posts = fetch_payload["posts"]
     raw_comments = fetch_payload["comments"]
     fetch_warnings: list[FetchWarning] = fetch_payload["warnings"]
-    completed_source_count = max(len(plan.source_scope) - len([warning for warning in fetch_warnings if warning.code == "SOURCE_FETCH_PARTIAL"]), 0)
-    fetch_status, failure_reason = _determine_outcome(raw_posts, completed_source_count, len(plan.source_scope))
+    partial_warning_count = len(
+        [warning for warning in fetch_warnings if warning.code == "SOURCE_FETCH_PARTIAL"]
+    )
+    completed_source_count = max(len(plan.source_scope) - partial_warning_count, 0)
+    fetch_status, failure_reason = _determine_outcome(
+        raw_posts,
+        completed_source_count,
+        len(plan.source_scope),
+    )
     append_stage(
         "fetch",
         status=fetch_status if fetch_status != "success" else "success",
@@ -389,12 +454,22 @@ def run_pipeline(
         meta={"post_count": len(normalized_posts), "comment_count": len(normalized_comments)},
     )
 
-    retrieved_posts, retrieved_comments = _filter_retrieved_posts(plan, normalized_posts, normalized_comments)
+    retrieved_posts, retrieved_comments = _filter_retrieved_posts(
+        plan,
+        normalized_posts,
+        normalized_comments,
+    )
     append_stage(
         "retrieve",
         status="success",
-        message=f"retrieved {len(retrieved_posts)} posts and {len(retrieved_comments)} comments after filtering",
-        meta={"retrieved_post_count": len(retrieved_posts), "retrieved_comment_count": len(retrieved_comments)},
+        message=(
+            f"retrieved {len(retrieved_posts)} posts and "
+            f"{len(retrieved_comments)} comments after filtering"
+        ),
+        meta={
+            "retrieved_post_count": len(retrieved_posts),
+            "retrieved_comment_count": len(retrieved_comments),
+        },
     )
 
     clusters = build_clusters(plan=plan, posts=retrieved_posts, comments=retrieved_comments)
@@ -414,7 +489,7 @@ def run_pipeline(
 
     summary_stats = _build_summary_stats(retrieved_posts, retrieved_comments, len(clusters))
     available_boards = _build_available_boards(len(clusters))
-    outcome_status = "partial_success" if fetch_warnings else "success"
+    outcome_status = _build_outcome_status(fetch_warnings, len(clusters))
     coverage_note = _build_coverage_note(plan, fetch_warnings, len(clusters))
     pipeline_metadata = _build_pipeline_metadata(
         plan,
@@ -423,7 +498,7 @@ def run_pipeline(
         completed_source_count=completed_source_count,
         execution_mode=fetch_payload["execution_mode"],
     )
-    warning_items = _warning_items(fetch_warnings)
+    warning_items = _warning_items(fetch_warnings, cluster_count=len(clusters))
     append_stage(
         "snapshot",
         status="success",
@@ -455,7 +530,11 @@ def run_pipeline(
         "query_task_id": query_task_id,
         "status": outcome_status,
         "current_stage": FINALIZING_STAGE,
-        "progress": {"current_step": len(PIPELINE_STAGES), "total_steps": len(PIPELINE_STAGES), "percent": 100},
+        "progress": {
+            "current_step": len(PIPELINE_STAGES),
+            "total_steps": len(PIPELINE_STAGES),
+            "percent": 100,
+        },
         "timeline": timeline,
         "result_snapshot_id": None,
         "coverage_note": coverage_note,

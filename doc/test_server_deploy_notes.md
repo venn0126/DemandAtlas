@@ -320,7 +320,7 @@ curl http://127.0.0.1:8000/api/v1/result-snapshots/rs_01JVA1T4WM4B3PG5N8W1HEP7QA
 
 - QueryTask / ResultSnapshot 已转为数据库优先，但仍保留显式 demo ID 静态回退
 - 数据库 migration 在线验证依赖真实 PostgreSQL 实例
-- Worker pipeline 仍是占位链路，不做真实数据处理
+- Worker pipeline 已接入 fixture / Reddit OAuth 双路径和真实结果表落库，但评分与聚类仍是首版规则实现
 - API -> Worker 已有最小投递链路，但 Redis 不可达时会降级
 
 ---

@@ -59,7 +59,7 @@ class DirectedQueryTaskCreateRequest(BaseModel):
 class QueryTaskCreateCacheHitData(BaseModel):
     execution_mode: Literal["cache_hit"]
     query_task_id: str
-    status: Literal["success"]
+    status: Literal["success", "partial_success"]
     result_snapshot_id: str
     cached: bool
 
@@ -69,7 +69,7 @@ class QueryTaskCreateCacheHitData(BaseModel):
 class QueryTaskCreateAcceptedData(BaseModel):
     execution_mode: Literal["async"]
     query_task_id: str
-    status: Literal["pending"]
+    status: Literal["pending", "running"]
     poll_url: str
     anonymous_query_access_token: str
 

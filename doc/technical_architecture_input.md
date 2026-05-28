@@ -8,7 +8,6 @@
 - 适用阶段：技术方案设计 / 架构评审 / 数据模型设计 / 接口设计
 - 输入来源：
   - `doc/prd_reddit_needs_discovery.md`
-  - `doc/prd_review_and_edge_cases.md`
 
 ---
 
